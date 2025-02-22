@@ -1,7 +1,7 @@
 from flask import *
 import daofile
 import grafico
-import grafico as gr
+
 
 app = Flask(__name__)
 

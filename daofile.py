@@ -21,7 +21,8 @@ def inserir(lumin, umidade, temp):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO dados_sensor (luminosidade, umidade, temperatura) VALUES (?, ?, ?)
+        INSERT INTO dados_sensor (luminosidade, umidade, temperatura, envio) 
+        VALUES (?, ?, ?, datetime('now', 'localtime'))
     ''', (lumin, umidade, temp))
     conn.commit()
     conn.close()
@@ -41,7 +42,8 @@ def listar():
 def get_sensor(nome_sensor):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
-    cursor.execute(f'SELECT {nome_sensor},datetime(envio, \'localtime\') FROM dados_sensor order by id asc')
+    #cursor.execute(f'SELECT {nome_sensor},datetime(envio, \'localtime\') FROM dados_sensor order by id asc')
+    cursor.execute(f'SELECT {nome_sensor},envio FROM dados_sensor order by id asc')
     dados = cursor.fetchall()
     objetos = []
     for dado in dados:
