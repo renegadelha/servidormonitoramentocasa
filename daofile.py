@@ -9,7 +9,7 @@ def cria_tabela():
             luminosidade TEXT NOT NULL,
             umidade TEXT NOT NULL,
             temperatura TEXT NOT NULL,
-            envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            envio TEXT DEFAULT (DATETIME('now', 'localtime'))
         )
     ''')
     conn.commit()
