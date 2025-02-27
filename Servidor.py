@@ -8,6 +8,9 @@ app = Flask(__name__)
 ip_local = '0.0.0.0'
 porta_Local = 5050
 
+@app.route('/a')
+def pag():
+    return render_template('controle.html')
 
 @app.route('/')
 def abrir():
@@ -27,6 +30,7 @@ def mostrar_grafico():
 
     html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
     return render_template('view.html', graph_html=html)
+
 
 @app.route('/monitoramento', methods=['POST'])  # cadastrando uma rota
 def recebe_dados():
