@@ -1,4 +1,5 @@
 import sqlite3 as sqlite
+import datetime
 
 def cria_tabela():
     conn = sqlite.connect('db2.sqlite')
@@ -15,7 +16,6 @@ def cria_tabela():
     conn.commit()
     conn.close()
 
-cria_tabela()
 
 def inserir(lumin, umidade, temp):
     conn = sqlite.connect('db2.sqlite')
@@ -44,6 +44,26 @@ def get_sensor(nome_sensor):
     cursor = conn.cursor()
     #cursor.execute(f'SELECT {nome_sensor},datetime(envio, \'localtime\') FROM dados_sensor order by id asc')
     cursor.execute(f'SELECT {nome_sensor},envio FROM dados_sensor order by id asc')
+    dados = cursor.fetchall()
+    objetos = []
+    for dado in dados:
+        objetos.append(dado)
+    conn.close()
+    return objetos
+
+def get_sensor24h(nome_sensor):
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+
+    agora = datetime.datetime.now()
+    vinte_quatro_horas_atras = agora - datetime.timedelta(hours=24)
+    vinte_quatro_horas_atras_str = vinte_quatro_horas_atras.strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute(f'''
+            SELECT {nome_sensor},envio FROM dados_sensor
+            WHERE envio >= ?
+        ''', (vinte_quatro_horas_atras_str,))
+
     dados = cursor.fetchall()
     objetos = []
     for dado in dados:

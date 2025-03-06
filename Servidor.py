@@ -8,13 +8,9 @@ app = Flask(__name__)
 ip_local = '0.0.0.0'
 porta_Local = 5050
 
-@app.route('/a')
-def pag():
-    return render_template('controle.html')
-
 @app.route('/')
 def abrir():
-    return render_template('abrir.html')
+    return render_template('controle.html')
 
 @app.route('/listar')
 def listar():
@@ -24,7 +20,7 @@ def listar():
 
 @app.route('/grafico')
 def mostrar_grafico():
-    dados = daofile.get_sensor('temperatura')
+    dados = daofile.get_sensor24h('temperatura')
     temperaturas = [float(item[0]) for item in dados]
     horas = [item[1] for item in dados]
 
