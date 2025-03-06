@@ -34,7 +34,6 @@ def recebe_dados():
     temp = data['temperatura']
     umidade = data['umidade']
     lumin = data['luminosidade']
-    print(temp)
     daofile.inserir(lumin,umidade,temp)
 
     return jsonify({'message': 'Dados salvos com sucesso'}), 200
