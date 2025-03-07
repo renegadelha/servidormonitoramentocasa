@@ -34,7 +34,12 @@ def recebe_dados():
     temp = data['temperatura']
     umidade = data['umidade']
     lumin = data['luminosidade']
-    daofile.inserir(lumin,umidade,temp)
+    status_janela = 'aberta' if int(data['statusjanela']) == 1 else 'fechada'
+    chuva = int(data['chuva'])
+
+    chuva = 100 - (chuva / 4095) * 100
+    chuva = round(chuva, 1)
+    daofile.inserir(lumin,umidade,temp, status_janela, chuva)
 
     return jsonify({'message': 'Dados salvos com sucesso'}), 200
 

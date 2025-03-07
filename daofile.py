@@ -10,20 +10,23 @@ def cria_tabela():
             luminosidade TEXT NOT NULL,
             umidade TEXT NOT NULL,
             temperatura TEXT NOT NULL,
+            status TEXT NOT NULL,
+            chuva TEXT NOT NULL,
             envio TEXT DEFAULT (DATETIME('now', 'localtime'))
         )
     ''')
     conn.commit()
     conn.close()
 
+cria_tabela()
 
-def inserir(lumin, umidade, temp):
+def inserir(lumin, umidade, temp, status, chuva):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO dados_sensor (luminosidade, umidade, temperatura, envio) 
-        VALUES (?, ?, ?, datetime('now', 'localtime'))
-    ''', (lumin, umidade, temp))
+        INSERT INTO dados_sensor (luminosidade, umidade, temperatura, status, chuva, envio) 
+        VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'))
+    ''', (lumin, umidade, temp, status, chuva))
     conn.commit()
     conn.close()
 

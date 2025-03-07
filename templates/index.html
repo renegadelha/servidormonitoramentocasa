@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sensor Data</title>
-        <meta http-equiv="refresh" content="5">
+        <meta http-equiv="refresh" content="10">
     </head>
 
     <body>
@@ -16,6 +16,8 @@
                     <th>Luminosidade</th>
                     <th>Umidade</th>
                     <th>Temperatura</th>
+                    <th>Status Janela</th>
+                    <th>Chuva</th>
                     <th>Hora-data</th>
                 </tr>
             </thead>
@@ -26,6 +28,8 @@
                     <td>{{ data[2] }}</td>
                     <td>{{ data[3] }}</td>
                     <td>{{ data[4] }}</td>
+                    <td>{{ data[5] }}</td>
+                    <td>{{ data[6] }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
