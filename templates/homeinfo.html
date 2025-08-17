@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moradores da Casa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a4e69;
+            --secondary-color: #6d597a;
+            --accent-color: #b5838d;
+            --text-color: #2c2a37;
+            --bg-color: #f8edeb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            transition: background-color 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            font-style: italic;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            padding: 50px 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, var(--bg-color), var(--accent-color));
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            transform: rotateY(180deg);
+            padding: 40px;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .profile-pic {
+            transform: scale(1.05);
+        }
+
+        .card-front h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .card-front p {
+            font-style: italic;
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        .card-back h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .card-back ul {
+            list-style: none;
+            text-align: left;
+            padding-left: 0;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .card-back li {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-back li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>A Casa de Dr. Titi, Lusirene e Renê</h1>
+    <p>Conheça os moradores e suas histórias</p>
+</header>
+
+<div class="container card-grid">
+
+    <div class="card">
+        <div class="card-inner">
+            <div class="card-front">
+                <img src="https://via.placeholder.com/150/b5838d/FFFFFF?text=Dr.T" alt="Dr. Titi" class="profile-pic">
+                <h2>Dr. Titi</h2>
+                <p>O Sábio da Casa</p>
+            </div>
+            <div class="card-back">
+                <h3>Detalhes sobre Dr. Titi</h3>
+                <ul>
+                    <li>Profissão: Mestre em Sabedoria</li>
+                    <li>Passatempo: Contemplar a vida</li>
+                    <li>Frase Favorita: "Acalme a alma."</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-inner">
+            <div class="card-front">
+                <img src="https://via.placeholder.com/150/6d597a/FFFFFF?text=Lusi" alt="Lusirene" class="profile-pic">
+                <h2>Lusirene</h2>
+                <p>O Coração da Casa</p>
+            </div>
+            <div class="card-back">
+                <h3>Detalhes sobre Lusirene</h3>
+                <ul>
+                    <li>Profissão: Guardiã da Felicidade</li>
+                    <li>Passatempo: Cuidar do jardim</li>
+                    <li>Frase Favorita: "Com carinho, tudo floresce."</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-inner">
+            <div class="card-front">
+                <img src="https://via.placeholder.com/150/4a4e69/FFFFFF?text=Renê" alt="Renê" class="profile-pic">
+                <h2>Renê</h2>
+                <p>O Espirito Livre</p>
+            </div>
+            <div class="card-back">
+                <h3>Detalhes sobre Renê</h3>
+                <ul>
+                    <li>Profissão: Aventureiro Profissional</li>
+                    <li>Passatempo: Explorar novas ideias</li>
+                    <li>Frase Favorita: "Vamos em frente!"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('is-flipped');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -6,11 +6,11 @@ import grafico
 app = Flask(__name__)
 
 ip_local = '0.0.0.0'
-porta_Local = 5050
+porta_Local = 80
 
 @app.route('/')
 def abrir():
-    return render_template('controle.html')
+    return render_template('homeinfo.html')
 
 @app.route('/listar')
 def listar():
@@ -26,6 +26,17 @@ def mostrar_grafico():
 
     html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
     return render_template('view.html', graph_html=html)
+
+
+
+@app.route('/filtro')
+def filtrarr_grafico():
+    dados = daofile.filtrar_dados()
+    temperaturas = [float(item[0]) for item in dados]
+    horas = [item[1] for item in dados]
+
+    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
+    return render_template('view2.html', graph_html=html)
 
 
 @app.route('/monitoramento', methods=['POST'])  # cadastrando uma rota

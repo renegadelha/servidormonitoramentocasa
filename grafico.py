@@ -11,7 +11,7 @@ def gerar_grafico2(sensor, hora_data, nome_sensor):
         name=nome_sensor,
         marker=dict(size=3, color='red')
     ))
-    fig.update_layout(title="Variação de +" + nome_sensor,
+    fig.update_layout(title=nome_sensor,
                       xaxis_title="Horário",
                       yaxis_title=nome_sensor)
     return fig.to_html()

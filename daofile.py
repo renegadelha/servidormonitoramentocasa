@@ -89,3 +89,22 @@ def login(email, senha):
         return False
 
 
+def filtrar_dados():
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+
+    query = """
+    SELECT temperatura,envio FROM dados_sensor
+    WHERE CAST(temperatura AS REAL) < 28
+    AND strftime('%H', envio) BETWEEN '00' AND '02'
+    AND CAST(strftime('%M', envio) AS INTEGER) % 2 = 0
+    AND CAST(strftime('%S', envio) AS INTEGER) % 2 = 0
+    AND status == 'aberta'
+    """
+
+    cursor.execute(query)
+    resultados = cursor.fetchall()
+    conn.close()
+
+    return resultados
+
