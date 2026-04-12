@@ -30,6 +30,16 @@ def inserir(lumin, umidade, temp, status, chuva):
     conn.commit()
     conn.close()
 
+def inserir_th(umidade, temp):
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO dados_sensor (luminosidade, umidade, temperatura, status, chuva, envio) 
+        VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'))
+    ''', (0, umidade, temp, 0, 0))
+    conn.commit()
+    conn.close()
+
 
 def listar():
     conn = sqlite.connect('db2.sqlite')
@@ -89,12 +99,12 @@ def login(email, senha):
         return False
 
 
-def filtrar_dados():
+def filtrar_dados(sensor):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
 
-    query = """
-    SELECT temperatura,envio FROM dados_sensor
+    query = f"""
+    SELECT {sensor},envio FROM dados_sensor
     WHERE CAST(temperatura AS REAL) < 28
     AND strftime('%H', envio) BETWEEN '00' AND '02'
     AND CAST(strftime('%M', envio) AS INTEGER) % 2 = 0
