@@ -4,7 +4,7 @@ import requests
 # Configurações
 TOKEN = '8687595101:AAFCnyw9zTMOwLmJhRwmgYhahFXFbulMk-I'
 MEU_CHAT_ID = 8357123466
-URL_SERVIDOR_LOCAL = 'http://192.168.0.117/status'
+URL_SERVIDOR_LOCAL = 'http://192.168.0.117/'
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -13,7 +13,7 @@ def enviar_para_esp32(endpoint, params=None):
 
     try:
 
-        resposta = requests.get(URL_SERVIDOR_LOCAL, params=params, timeout=5)
+        resposta = requests.get(URL_SERVIDOR_LOCAL + endpoint, params=params, timeout=5)
 
         if resposta.status_code == 200:
             return resposta.text
@@ -30,7 +30,7 @@ def comandos_simples(message):
         return
 
     comando = message.text.split()[0]
-
+    print(comando)
     bot.reply_to(message, f"Executando {comando} na ESP32...")
 
     resposta_esp = enviar_para_esp32(comando)
