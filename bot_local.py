@@ -13,7 +13,7 @@ def enviar_para_esp32(endpoint, params=None):
 
     try:
 
-        resposta = requests.get(URL_SERVIDOR_LOCAL + endpoint, params=params, timeout=5)
+        resposta = requests.get(URL_SERVIDOR_LOCAL + endpoint, params=params, timeout=12)
 
         if resposta.status_code == 200:
             return resposta.text
