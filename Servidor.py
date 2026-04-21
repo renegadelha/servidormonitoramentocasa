@@ -72,8 +72,7 @@ def fechar_janela():
 def receber_dados():
     temp_str = request.args.get('temperatura')
     umid_str = request.args.get('umidade')
-    chuva = request.args.get('chuva')
-    print(temp_str, umid_str, chuva)
+    print(temp_str, umid_str)
 
     if temp_str is None or umid_str is None:
         print("Erro: Requisição recebida sem os parâmetros corretos.")
