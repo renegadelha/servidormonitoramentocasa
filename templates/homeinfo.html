@@ -1,199 +1,94 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moradores da Casa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4a4e69;
-            --secondary-color: #6d597a;
-            --accent-color: #b5838d;
-            --text-color: #2c2a37;
-            --bg-color: #f8edeb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        header {
-            text-align: center;
-            padding: 60px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 20px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        header p {
-            font-size: 1.2rem;
-            font-style: italic;
-            opacity: 0.9;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .card {
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            text-align: center;
-            padding: 30px;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .profile-pic {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--accent-color);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        .card p {
-            font-style: italic;
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-        }
-
-        .details {
-            display: none;
-            text-align: left;
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .details.show {
-            display: block;
-        }
-
-        .details ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .details li {
-            background-color: var(--bg-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        .details li strong {
-            color: var(--text-color);
-        }
-
-    </style>
+    <link rel="stylesheet" href="../static/css/homeinfo.css">
+    <title>Meu Quarto</title>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>A Casa de Dr. Titi e Lusirene</h1>
-        <p>Conheça os moradores e suas histórias</p>
-    </header>
+    <h1 style="color: var(--accent);">Controle do Quarto</h1>
 
-    <div class="card-grid">
-
-        <div class="card" onclick="toggleDetails(this)">
-            <img src="https://via.placeholder.com/120/b5838d/FFFFFF?text=Dr.T" alt="Dr. Titi" class="profile-pic">
-            <h2>Dr. Titi</h2>
-            <p>O Sábio da Casa</p>
-            <div class="details">
-                <ul>
-                    <li><strong>Profissão:</strong> Mestre em Sabedoria</li>
-                    <li><strong>Passatempo:</strong> Contemplar a vida</li>
-                    <li><strong>Frase Favorita:</strong> "Acalme a alma."</li>
-                </ul>
+    <div class="dashboard">
+        <div class="card">
+            <h2>Controle da Janela</h2>
+            <div class="btn-group">
+                <button class="btn btn-action" onclick="fetch('/interf/abrir')">ABRIR</button>
+                <button class="btn btn-off" onclick="fetch('/interf/desligar')">FECHAR</button>
             </div>
         </div>
 
-        <div class="card" onclick="toggleDetails(this)">
-            <img src="https://via.placeholder.com/120/6d597a/FFFFFF?text=Lusi" alt="Lusirene" class="profile-pic">
-            <h2>Lusirene</h2>
-            <p>O Coração da Casa</p>
-            <div class="details">
-                <ul>
-                    <li><strong>Profissão:</strong> Guardiã da Felicidade</li>
-                    <li><strong>Passatempo:</strong> Cuidar do jardim</li>
-                    <li><strong>Frase Favorita:</strong> "Com carinho, tudo floresce."</li>
-                </ul>
+        <div class="card">
+            <h2>Ar Condicionado</h2>
+            <div class="btn-group">
+                <button class="btn btn-on" onclick="fetch('/interf/ligarar')">LIGAR</button>
+                <button class="btn btn-off" onclick="fetch('/interf/desligarar')">DESLIGAR</button>
             </div>
         </div>
 
-        <div class="card" onclick="toggleDetails(this)">
-            <img src="https://via.placeholder.com/120/4a4e69/FFFFFF?text=Renê" alt="Renê" class="profile-pic">
-            <h2>Renê</h2>
-            <p>O Espirito Livre</p>
-            <div class="details">
-                <ul>
-                    <li><strong>Profissão:</strong> Aventureiro Profissional</li>
-                    <li><strong>Passatempo:</strong> Explorar novas ideias</li>
-                    <li><strong>Frase Favorita:</strong> "Vamos em frente!"</li>
-                </ul>
+        <div class="card">
+            <h2>Modo Dormir</h2>
+            <label class="switch">
+                <input type="checkbox" id="toggle-dormir" onchange="toggleDormir()">
+                <span class="slider"></span>
+            </label>
+            <p id="status-dormir" style="margin-top: 15px; font-weight: bold; color: var(--danger);">Status: DESATIVADO</p>
+        </div>
+
+
+
+        <div class="card">
+            <h2>Limite de Temperatura</h2>
+            <div class="temp-control">
+                <button class="circle-btn" onclick="ajustarTemp(-0.5)">-</button>
+                <span id="temp-display">26.5°C</span>
+                <button class="circle-btn" onclick="ajustarTemp(0.5)">+</button>
             </div>
         </div>
 
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>Visualização Histórica (Últimas 24h)</h2>
+            <div class="btn-group">
+                <a href="/graficotemp" target="_blank" class="btn btn-nav">VER GRÁFICO DE TEMPERATURA</a>
+                <a href="/graficoumidade" target="_blank" class="btn btn-nav">VER GRÁFICO DE UMIDADE</a>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    function toggleDetails(card) {
-        const details = card.querySelector('.details');
-        details.classList.toggle('show');
-    }
-</script>
+    <script>
+        let tempLimite = 26.5;
+        function ajustarTemp(v) {
+            tempLimite += v;
+            document.getElementById('temp-display').innerText = tempLimite + "°C";
+            fetch(`/interf/ajustar_limite?temp=${tempLimite}`, {method:'GET'});
+        }
 
+        function toggleDormir() {
+            const checkbox = document.getElementById('toggle-dormir');
+            const statusText = document.getElementById('status-dormir');
+
+            fetch('/interf/dormir', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+
+                    checkbox.checked = data.modo_dormir;
+
+                    if (data.modo_dormir) {
+                        statusText.innerText = "Status: ATIVADO";
+                        statusText.style.color = "var(--success)";
+                    } else {
+                        statusText.innerText = "Status: DESATIVADO";
+                        statusText.style.color = "var(--danger)";
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao alterar modo dormir:", error);
+
+                    checkbox.checked = !checkbox.checked;
+                    alert("Erro de comunicação com o servidor!");
+                });
+        }
+    </script>
 </body>
 </html>

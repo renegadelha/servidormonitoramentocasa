@@ -1,0 +1,126 @@
+:root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --accent: #00adb5;
+            --danger: #ff2e63;
+            --success: #00d28a;
+            --info: #393e46;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h2 { font-size: 1.1rem; margin-bottom: 15px; color: var(--accent); }
+
+        .btn-group { display: flex; gap: 10px; }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: filter 0.2s;
+        }
+
+        .btn:active { filter: brightness(1.2); }
+
+        .btn-action { background-color: var(--accent); color: white; }
+        .btn-off { background-color: var(--danger); color: white; }
+        .btn-on { background-color: var(--success); color: white; }
+        .btn-nav { background-color: var(--info); color: white; }
+
+        .temp-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1.8rem;
+        }
+
+        .circle-btn {
+            background-color: #333;
+            color: var(--accent);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Estilos para o Switch Button */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-top: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--danger); /* Cor quando desligado */
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--success); /* Cor quando ligado */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}

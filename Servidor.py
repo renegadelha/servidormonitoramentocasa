@@ -1,51 +1,61 @@
 from flask import *
 import daofile
 import grafico
-
+import services
+from graficos_bp import graf_bp
+from interface_bp import inter_bp
+from config import TEMPERATURA_LIMITE_FECHAR, estado_quarto, placas_registradas
 
 app = Flask(__name__)
 
+app.register_blueprint(graf_bp, url_prefix='/graficos')
+app.register_blueprint(inter_bp, url_prefix='/interf')
+
 ip_local = '0.0.0.0'
-porta_Local = 5001
+porta_Local = 5050
+
+
+@app.route('/placas', methods=['GET'])
+def ver_status():
+    if not placas_registradas:
+        return jsonify({"mensagem": "Nenhuma placa registrada ainda."}), 200
+    return jsonify(placas_registradas), 200
+
 
 @app.route('/')
-def abrir():
+def home():
     return render_template('homeinfo.html')
+
+
+@app.route('/meuip', methods=['GET'])
+def registrar_ip():
+
+    nome_placa = request.args.get('placa')
+    ip_placa = request.args.get('ip')
+
+    if not nome_placa or not ip_placa:
+        return jsonify({"erro": "Parâmetros 'placa' e 'ip' são obrigatórios"}), 400
+
+    placas_registradas[nome_placa] = ip_placa
+
+    return jsonify({"status": "sucesso", "mensagem": "IP registrado corretamente"}), 200
+
+
+@app.route('/ajustar', methods=['GET'])
+def receber_dados():
+    temp_str = request.args.get('temperatura')
+    umid_str = request.args.get('umidade')
+    dormir = request.args.get('dormir')
+    aberta = request.args.get('aberta')
+
+    return services.ajustar(temp_str, umid_str, dormir, aberta)
+
 
 @app.route('/listar')
 def listar():
     dados = daofile.listar()
     return render_template('index.html', dados_sensor=dados)
 
-
-@app.route('/grafico')
-def mostrar_grafico():
-    dados = daofile.get_sensor24h('temperatura')
-    temperaturas = [float(item[0]) for item in dados]
-    horas = [item[1] for item in dados]
-
-    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
-    return render_template('view.html', graph_html=html)
-
-
-
-@app.route('/graficotemp')
-def filtrar_grafico_temp():
-    dados = daofile.filtrar_dados('temperatura')
-    temperaturas = [float(item[0]) for item in dados]
-    horas = [item[1] for item in dados]
-
-    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
-    return render_template('view2.html', graph_html=html)
-
-@app.route('/graficoumidade')
-def filtrar_grafico_umidade():
-    dados = daofile.filtrar_dados('umidade')
-    temperaturas = [float(item[0]) for item in dados]
-    horas = [item[1] for item in dados]
-
-    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
-    return render_template('view2.html', graph_html=html)
 
 @app.route('/monitoramento', methods=['POST'])  # cadastrando uma rota
 def recebe_dados():
@@ -62,31 +72,6 @@ def recebe_dados():
 
     return jsonify({'message': 'Dados salvos com sucesso'}), 200
 
-@app.route('/fechar')
-def fechar_janela():
-    print('recebi o fechar janela')
-    return 'ok',200
-
-
-@app.route('/ajustar', methods=['GET'])
-def receber_dados():
-    temp_str = request.args.get('temperatura')
-    umid_str = request.args.get('umidade')
-    print(temp_str, umid_str)
-
-    if temp_str is None or umid_str is None:
-        print("Erro: Requisição recebida sem os parâmetros corretos.")
-        return jsonify({"erro": "Faltam parâmetros de temperatura ou umidade"}), 400
-
-    try:
-        temperatura = float(temp_str)
-        umidade = float(umid_str)
-        daofile.inserir_th(umidade, temperatura)
-        return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
-
-    except ValueError:
-
-        return jsonify({"erro": "Os valores devem ser numéricos (float)"}), 400
 
 if __name__ == '__main__':
     app.run(host=ip_local, port=porta_Local, debug=True)
