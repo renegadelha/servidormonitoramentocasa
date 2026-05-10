@@ -1,14 +1,14 @@
 from flask import jsonify, request
 import requests
-from config import TEMPERATURA_LIMITE_FECHAR, estado_quarto, placas_registradas
+from config import estado_quarto, placas_registradas
 import daofile
 
 
 def ajustar(temp_str, umid_str, dormir, aberta):
     estado_quarto['dormir'] = int(dormir)
-    estado_quarto['janela_fechada'] = int(aberta)
+    estado_quarto['janela_aberta'] = int(aberta)
 
-    print(temp_str, umid_str, dormir, aberta)
+    print(f"Recebido - Temp: {temp_str}, Umid: {umid_str}, Dormir: {dormir}, Aberta(ESP): {aberta}")
 
     if temp_str is None or umid_str is None:
         print("Erro: Requisição recebida sem os parâmetros corretos.")
@@ -19,33 +19,51 @@ def ajustar(temp_str, umid_str, dormir, aberta):
         umidade = float(umid_str)
         daofile.inserir_th(umidade, temperatura)
 
-        if estado_quarto['modo_dormir'] and temperatura > 28.0 and not estado_quarto['ar_ligado']:
+        if estado_quarto['dormir'] == 1 and temperatura > estado_quarto['temperatura_limite'] and not estado_quarto['ar_ligado']:
             try:
-                if not estado_quarto['janela_fechada']:
-                    requests.get(f'http://{placas_registradas.get('esp32')}/fechar', timeout=13)
-                    estado_quarto['janela_fechada'] = 1
 
-                if not estado_quarto['ar_ligado']:
-                    requests.get(f'http://{placas_registradas.get('esp8266ar')}/ligar', timeout=3)
+                if estado_quarto['janela_aberta'] == 1:
+                    requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=13)
+
+                    estado_quarto['janela_aberta'] = 0
+
+                if estado_quarto['ar_ligado'] == 0:
+                    requests.get(f'http://{placas_registradas.get("esp8266ar")}/ligar', timeout=3)
                     estado_quarto['ar_ligado'] = 1
 
             except requests.exceptions.RequestException as e:
                 print(f"Erro ao comunicar com as placas: {e}")
-                return jsonify({"status": "erro", "mensagem": "Erro ao comunicar com as placas!"}), 400
+                return jsonify({"status": "erro", "mensagem": "Erro ao comunicar com as placas!"}), 503
+
         return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
 
     except ValueError:
-
         return jsonify({"erro": "Os valores devem ser numéricos (float)"}), 400
 
 
 def ajuster_temp_limite(tempo):
-    global TEMPERATURA_LIMITE_FECHAR
+
     try:
-        TEMPERATURA_LIMITE_FECHAR = float(tempo)
+        estado_quarto['temperatura_limite'] = float(tempo)
         return 'ok', 200
     except ValueError:
-        print('nao recebi')
+        print('nao recebi limite valido')
         return 'erro', 400
 
 
+def pegar_status():
+    try:
+        ip_esp32 = placas_registradas.get('janela')
+        if not ip_esp32:
+            return "Erro: IP da ESP32 (janela) não encontrado."
+
+        url = f"http://{ip_esp32}/status"
+        resposta = requests.get(url, timeout=5)
+
+        if resposta.status_code == 200:
+            return resposta.text
+        else:
+            return f"Erro na ESP32 (Status {resposta.status_code}): {resposta.text}"
+
+    except requests.exceptions.RequestException as e:
+        return f"Falha de conexão com a ESP32. Ela está ligada na mesma rede?\nDetalhe: {e}"

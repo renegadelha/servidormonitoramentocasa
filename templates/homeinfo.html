@@ -15,7 +15,7 @@
             <h2>Controle da Janela</h2>
             <div class="btn-group">
                 <button class="btn btn-action" onclick="fetch('/interf/abrir')">ABRIR</button>
-                <button class="btn btn-off" onclick="fetch('/interf/desligar')">FECHAR</button>
+                <button class="btn btn-off" onclick="fetch('/interf/fechar')">FECHAR</button>
             </div>
         </div>
 
@@ -50,8 +50,9 @@
         <div class="card" style="grid-column: 1 / -1;">
             <h2>Visualização Histórica (Últimas 24h)</h2>
             <div class="btn-group">
-                <a href="/graficotemp" target="_blank" class="btn btn-nav">VER GRÁFICO DE TEMPERATURA</a>
-                <a href="/graficoumidade" target="_blank" class="btn btn-nav">VER GRÁFICO DE UMIDADE</a>
+                <a href="/graficos/" target="_blank" class="btn btn-nav">ÚLTIMAS 24h TEMPERATURA </a>
+                <a href="/graficos/temp" target="_blank" class="btn btn-nav">VER GRÁFICO DE TEMPERATURA</a>
+                <a href="/graficos/umidade" target="_blank" class="btn btn-nav">VER GRÁFICO DE UMIDADE</a>
             </div>
         </div>
     </div>

@@ -18,8 +18,6 @@ def cria_tabela():
     conn.commit()
     conn.close()
 
-cria_tabela()
-
 def inserir(lumin, umidade, temp, status, chuva):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
@@ -85,6 +83,26 @@ def get_sensor24h(nome_sensor):
     return objetos
 
 
+def get_historico_agrupado(nome_sensor):
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+
+    query = f'''
+        SELECT 
+            AVG(CAST({nome_sensor} AS REAL)) as media_sensor,
+            strftime('%Y-%m-%d %H:00:00', envio) as hora_agrupada
+        FROM dados_sensor 
+        GROUP BY hora_agrupada
+        ORDER BY hora_agrupada ASC
+    '''
+
+    cursor.execute(query)
+    dados = cursor.fetchall()
+    conn.close()
+
+    return dados
+
+
 def login(email, senha):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
@@ -118,3 +136,41 @@ def filtrar_dados(sensor):
 
     return resultados
 
+
+def remover_dados_antigos(data_corte):
+    """    Remove todos os registos anteriores à data especificada.     Formato da data_corte: 'YYYY-MM-DD'     """
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+
+
+    query = '''
+            DELETE \
+            FROM dados_sensor
+            WHERE envio < ? \
+            '''
+
+    cursor.execute(query, (f"{data_corte} 00:00:00",))
+    linhas_apagadas = cursor.rowcount
+    conn.commit()
+    conn.close()
+
+    return linhas_apagadas
+
+
+def remover_temperaturas_absurdas(limite):
+    """    aqui removo todos os registos onde a temperatura seja superior ao limite informado   """
+    conn = sqlite.connect('db2.sqlite')
+    cursor = conn.cursor()
+
+    query = '''
+            DELETE \
+            FROM dados_sensor
+            WHERE CAST(temperatura AS REAL) > ? \
+            '''
+
+    cursor.execute(query, (limite,))
+    linhas_apagadas = cursor.rowcount
+    conn.commit()
+    conn.close()
+
+    return linhas_apagadas

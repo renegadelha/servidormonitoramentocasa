@@ -14,23 +14,26 @@ def mostrar_grafico():
     return render_template('view.html', graph_html=html)
 
 
-
 @graf_bp.route('/temp')
 def filtrar_grafico_temp():
-    dados = daofile.filtrar_dados('temperatura')
-    temperaturas = [float(item[0]) for item in dados]
+    dados = daofile.get_historico_agrupado('temperatura')
+
+    temperaturas = [round(float(item[0]), 1) for item in dados]
     horas = [item[1] for item in dados]
 
-    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
+    html = grafico.gerar_grafico2(temperaturas, horas, 'Histórico Completo de Temperatura (Média Horária)')
+
     return render_template('view2.html', graph_html=html)
 
 @graf_bp.route('/umidade')
 def filtrar_grafico_umidade():
-    dados = daofile.get_sensor24h('umidade')
-    temperaturas = [float(item[0]) for item in dados]
+    dados = daofile.get_historico_agrupado('umidade')
+
+    umidades = [round(float(item[0]), 1) for item in dados]
     horas = [item[1] for item in dados]
 
-    html = grafico.gerar_grafico2(temperaturas, horas,'Temperatura')
+    html = grafico.gerar_grafico2(umidades, horas, 'Histórico Completo de Umidade (Média Horária)')
+
     return render_template('view2.html', graph_html=html)
 
 

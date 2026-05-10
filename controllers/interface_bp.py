@@ -1,6 +1,5 @@
 from flask import *
 import requests
-
 import services
 from config import TEMPERATURA_LIMITE_FECHAR, estado_quarto, placas_registradas
 
@@ -13,7 +12,7 @@ def alternar_modo_dormir():
     estado_pretendido = 1 if estado_atual == 0 else 0
 
     estado_texto = "entrando" if estado_pretendido == 1 else "saindo"
-    ip_esp32 = placas_registradas.get('esp32')
+    ip_esp32 = placas_registradas.get('janela')
 
     if not ip_esp32:
         return jsonify({"erro": "IP da ESP32 não encontrado no registo."}), 404
@@ -36,25 +35,25 @@ def alternar_modo_dormir():
         return jsonify({"erro": f"Falha de comunicação com a placa: {str(e)}"}), 503
 
 
-@inter_bp.route('/ajustar_limite')
+@inter_bp.route('/ajustar_limite', methods=['GET'])
 def ajuster_temp_limit():
     temp = request.args.get('temp')
     return services.ajuster_temp_limite(temp)
 
 
-@inter_bp.route('/abrir', methods=['GET'])
+@inter_bp.route('/abrir')
 def abrir_janela_endpoint():
-    ip_esp32 = placas_registradas.get('esp32')
+    ip_esp32 = placas_registradas.get('janela')
     if not ip_esp32:
         return jsonify({"erro": "IP da ESP32 não encontrado"}), 404
 
     url = f"http://{ip_esp32}/abrir"
     try:
-
-        response = requests.get(url, timeout=12)
+        response = requests.get(url, timeout=15)
 
         if response.status_code == 200:
-            estado_quarto['janela_fechada'] = 0
+
+            estado_quarto['janela_aberta'] = 1
             return jsonify({
                 "status": "sucesso",
                 "mensagem": "Janela aberta com sucesso",
@@ -63,7 +62,7 @@ def abrir_janela_endpoint():
 
         elif response.status_code == 208:
 
-            estado_quarto['janela_fechada'] = 0
+            estado_quarto['janela_aberta'] = 1
             return jsonify({
                 "status": "aviso",
                 "mensagem": "A janela já se encontrava aberta",
@@ -77,18 +76,21 @@ def abrir_janela_endpoint():
         return jsonify({"erro": f"Falha de comunicação com a ESP32: {str(e)}"}), 503
 
 
-@inter_bp.route('/fechar', methods=['GET'])
+@inter_bp.route('/fechar')
 def fechar_janela_endpoint():
-    ip_esp32 = placas_registradas.get('esp32')
+    ip_esp32 = placas_registradas.get('janela')
     if not ip_esp32:
         return jsonify({"erro": "IP da ESP32 não encontrado"}), 404
 
     url = f"http://{ip_esp32}/fechar"
     try:
-        response = requests.get(url, timeout=12)
+        response = requests.get(url, timeout=15)
 
         if response.status_code == 200:
-            estado_quarto['janela_fechada'] = 1
+
+            estado_quarto['janela_aberta'] = 0
+            estado_quarto['dormir'] = 0
+
             return jsonify({
                 "status": "sucesso",
                 "mensagem": "Janela fechada com sucesso",
@@ -96,7 +98,8 @@ def fechar_janela_endpoint():
             }), 200
 
         elif response.status_code == 208:
-            estado_quarto['janela_fechada'] = 1
+
+            estado_quarto['janela_aberta'] = 0
             return jsonify({
                 "status": "aviso",
                 "mensagem": "A janela já se encontrava fechada",

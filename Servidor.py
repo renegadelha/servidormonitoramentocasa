@@ -1,13 +1,13 @@
 from flask import *
 import daofile
-import grafico
 import services
-from graficos_bp import graf_bp
-from interface_bp import inter_bp
-from config import TEMPERATURA_LIMITE_FECHAR, estado_quarto, placas_registradas
+from controllers.admin_bp import admin_bp
+from controllers.graficos_bp import graf_bp
+from controllers.interface_bp import inter_bp
+from config import placas_registradas
 
 app = Flask(__name__)
-
+app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(graf_bp, url_prefix='/graficos')
 app.register_blueprint(inter_bp, url_prefix='/interf')
 
@@ -56,6 +56,10 @@ def listar():
     dados = daofile.listar()
     return render_template('index.html', dados_sensor=dados)
 
+
+@app.route('/status')
+def get_status():
+    return services.pegar_status()
 
 @app.route('/monitoramento', methods=['POST'])  # cadastrando uma rota
 def recebe_dados():
