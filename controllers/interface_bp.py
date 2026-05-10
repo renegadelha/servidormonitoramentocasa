@@ -1,7 +1,7 @@
 from flask import *
 import requests
 import services
-from config import TEMPERATURA_LIMITE_FECHAR, estado_quarto, placas_registradas
+from config import estado_quarto, placas_registradas
 
 inter_bp = Blueprint('interf', __name__)
 
