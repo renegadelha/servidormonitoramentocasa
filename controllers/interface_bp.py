@@ -6,7 +6,7 @@ from config import estado_quarto, placas_registradas
 inter_bp = Blueprint('interf', __name__)
 
 
-@inter_bp.route('/dormir', methods=['POST'])
+@inter_bp.route('/dormir', methods=['POST','GET'])
 def alternar_modo_dormir():
     estado_atual = estado_quarto['dormir']
     estado_pretendido = 1 if estado_atual == 0 else 0
