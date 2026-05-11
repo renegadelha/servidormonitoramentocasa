@@ -116,3 +116,13 @@ def fechar_janela_endpoint():
 
     except requests.exceptions.RequestException as e:
         return jsonify({"erro": f"Falha de comunicação com a ESP32: {str(e)}"}), 503
+
+
+@inter_bp.route('/status_geral', methods=['GET'])
+def status_geral():
+
+    configuracoes = {
+        "modo_dormir": estado_quarto['dormir'],
+        "temp_limite": estado_quarto['temperatura_limite']
+    }
+    return jsonify(configuracoes)

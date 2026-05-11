@@ -56,38 +56,58 @@
             </div>
         </div>
     </div>
-
     <script>
+        // Valor inicial padrão (será sobrescrito pelo backend)
         let tempLimite = 26.5;
-        function ajustarTemp(v) {
-            tempLimite += v;
-            document.getElementById('temp-display').innerText = tempLimite + "°C";
-            fetch(`/interf/ajustar_limite?temp=${tempLimite}`, {method:'GET'});
-        }
 
-        function toggleDormir() {
-            const checkbox = document.getElementById('toggle-dormir');
-            const statusText = document.getElementById('status-dormir');
+        window.onload = function() {
 
-            fetch('/interf/dormir', { method: 'POST' })
+            fetch('/interf/status_geral')
                 .then(response => response.json())
                 .then(data => {
 
-                    checkbox.checked = data.modo_dormir;
-
-                    if (data.modo_dormir) {
-                        statusText.innerText = "Status: ATIVADO";
-                        statusText.style.color = "var(--success)";
-                    } else {
-                        statusText.innerText = "Status: DESATIVADO";
-                        statusText.style.color = "var(--danger)";
+                    if (data.temp_limite !== undefined) {
+                        tempLimite = data.temp_limite;
+                        document.getElementById('temp-display').innerText = tempLimite.toFixed(1) + "°C";
                     }
+
+
+                    atualizarInterfaceDormir(data.modo_dormir);
+                })
+                .catch(err => console.error("Erro ao sincronizar com o servidor:", err));
+        };
+
+        function ajustarTemp(v) {
+            tempLimite += v;
+            document.getElementById('temp-display').innerText = tempLimite.toFixed(1) + "°C";
+
+            fetch(`/interf/ajustar_limite?temp=${tempLimite}`, {method:'GET'});
+        }
+
+        function atualizarInterfaceDormir(isAtivado) {
+            const checkbox = document.getElementById('toggle-dormir');
+            const statusText = document.getElementById('status-dormir');
+
+            checkbox.checked = isAtivado;
+            if (isAtivado) {
+                statusText.innerText = "Status: ATIVADO";
+                statusText.style.color = "var(--success)";
+            } else {
+                statusText.innerText = "Status: DESATIVADO";
+                statusText.style.color = "var(--danger)";
+            }
+        }
+
+        function toggleDormir() {
+            fetch('/interf/dormir', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    atualizarInterfaceDormir(data.modo_dormir);
                 })
                 .catch(error => {
-                    console.error("Erro ao alterar modo dormir:", error);
-
-                    checkbox.checked = !checkbox.checked;
-                    alert("Erro de comunicação com o servidor!");
+                    console.error("Erro:", error);
+                    document.getElementById('toggle-dormir').checked = !document.getElementById('toggle-dormir').checked;
+                    alert("Erro de comunicação!");
                 });
         }
     </script>

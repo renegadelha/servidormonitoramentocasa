@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 import requests
 from config import estado_quarto, placas_registradas
 import daofile
@@ -19,7 +19,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
         umidade = float(umid_str)
         daofile.inserir_th(umidade, temperatura)
 
-        if estado_quarto['dormir'] == 1 and temperatura > estado_quarto['temperatura_limite'] and not estado_quarto['ar_ligado']:
+        if estado_quarto['dormir'] == 1 and temperatura > estado_quarto['temperatura_limite'] and estado_quarto['ar_ligado'] == 0:
             try:
 
                 if estado_quarto['janela_aberta'] == 1:
