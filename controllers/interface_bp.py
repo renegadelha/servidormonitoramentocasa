@@ -40,6 +40,11 @@ def ajuster_temp_limit():
     temp = request.args.get('temp')
     return services.ajuster_temp_limite(temp)
 
+@inter_bp.route('/status_alexa')
+def status_alexa():
+    # Retorna sempre "on" em texto puro.
+    # Isso é só para a Alexa ficar feliz durante a descoberta e não dar erro.
+    return "on", 200
 
 @inter_bp.route('/abrir')
 def abrir_janela_endpoint():
