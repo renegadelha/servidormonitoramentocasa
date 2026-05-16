@@ -121,3 +121,75 @@ def status_geral():
         "temp_limite": estado_quarto['temperatura_limite']
     }
     return jsonify(configuracoes)
+
+
+@inter_bp.route('/ligarar')
+def ligarar_endpoint():
+    ip_esp8266ar = placas_registradas.get('esp8266ar')
+    if not ip_esp8266ar:
+        return jsonify({"erro": "IP da ESP8266ar não encontrado"}), 404
+
+    url = f"http://{ip_esp8266ar}/ligar"
+    try:
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+
+            estado_quarto['ar_ligado'] = 1
+            return jsonify({
+                "status": "sucesso",
+                "mensagem": "ar cond ligado com sucesso",
+                "ar_ligado": "ligado"
+            }), 200
+
+        elif response.status_code == 208:
+
+            estado_quarto['ar_ligado'] = 1
+            return jsonify({
+                "status": "aviso",
+                "mensagem": "o ar cond já se encontrava ligado",
+                "ar_ligado": "ligado"
+            }), 200
+
+        else:
+            return jsonify({"erro": f"Placa retornou status inesperado: {response.status_code}"}), 500
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": f"Falha de comunicação com a ESP8266ar: {str(e)}"}), 503
+
+
+
+@inter_bp.route('/desligarar')
+def desligarar_endpoint():
+    ip_esp8266ar = placas_registradas.get('esp8266ar')
+    if not ip_esp8266ar:
+        return jsonify({"erro": "IP da Esp8266 não encontrado"}), 404
+
+    url = f"http://{ip_esp8266ar}/desligar"
+    try:
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+
+            estado_quarto['ar_ligado'] = 0
+
+            return jsonify({
+                "status": "sucesso",
+                "mensagem": "ar cond desligado com sucesso",
+                "ar_ligado": "desligado"
+            }), 200
+
+        elif response.status_code == 208:
+
+            estado_quarto['ar_ligado'] = 0
+            return jsonify({
+                "status": "aviso",
+                "mensagem": "o ar condi se encontrava desligado",
+                "ar_ligado": "desligado"
+            }), 200
+
+        else:
+            return jsonify({"erro": f"Placa retornou status inesperado: {response.status_code}"}), 500
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": f"Falha de comunicação com a esp8266ar: {str(e)}"}), 503

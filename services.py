@@ -3,7 +3,6 @@ import requests
 from config import estado_quarto, placas_registradas
 import daofile
 
-
 def ajustar(temp_str, umid_str, dormir, aberta):
     estado_quarto['dormir'] = int(dormir)
     estado_quarto['janela_aberta'] = int(aberta)
@@ -34,6 +33,14 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             except requests.exceptions.RequestException as e:
                 print(f"Erro ao comunicar com as placas: {e}")
                 return jsonify({"status": "erro", "mensagem": "Erro ao comunicar com as placas!"}), 503
+
+        if estado_quarto['dormir'] == 1 and temperatura < 26 and estado_quarto['janela_aberta'] == 1:
+            try:
+                requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=13)
+                estado_quarto['janela_aberta'] = 0
+            except requests.exceptions.RequestException as e:
+                return jsonify({'status':'erro', 'mensagem':'Ao tentar comunicar com a janela, houve erro de conexão'})
+
 
         return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
 
