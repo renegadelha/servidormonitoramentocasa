@@ -2,6 +2,7 @@ from flask import jsonify
 import requests
 from config import estado_quarto, placas_registradas
 import daofile
+from datetime import datetime
 
 def ajustar(temp_str, umid_str, dormir, aberta):
     estado_quarto['dormir'] = int(dormir)
@@ -40,6 +41,21 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                 estado_quarto['janela_aberta'] = 0
             except requests.exceptions.RequestException as e:
                 return jsonify({'status':'erro', 'mensagem':'Ao tentar comunicar com a janela, houve erro de conexão'})
+
+        hora_atual = datetime.now().hour
+        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (3 <= hora_atual < 5):
+            try:
+
+                requests.get(f'http://{placas_registradas.get("esp8266ar")}/desligar', timeout=5)
+                estado_quarto['ar_ligado'] = 0
+
+                requests.get(f'http://{placas_registradas.get("janela")}/abrir', timeout=5)
+                estado_quarto['janela_aberta'] = 1
+
+                print("Skill Madrugada ativada: Ar desligado e janela aberta.")
+            except requests.exceptions.RequestException as e:
+                print(f"Erro na Skill da Madrugada: {e}")
+
 
 
         return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
