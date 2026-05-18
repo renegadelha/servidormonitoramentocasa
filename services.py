@@ -84,7 +84,7 @@ def pegar_status():
         resposta = requests.get(url, timeout=5)
 
         if resposta.status_code == 200:
-            return resposta.text
+            return resposta.text + '\n\n' + estado_quarto
         else:
             return f"Erro na ESP32 (Status {resposta.status_code}): {resposta.text}"
 
