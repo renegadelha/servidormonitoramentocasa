@@ -31,6 +31,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                     requests.get(f'http://{placas_registradas.get("esp8266ar")}/ligar', timeout=3)
                     estado_quarto['ar_ligado'] = 1
 
+                return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
             except requests.exceptions.RequestException as e:
                 print(f"Erro ao comunicar com as placas: {e}")
                 return jsonify({"status": "erro", "mensagem": "Erro ao comunicar com as placas!"}), 503
@@ -41,9 +42,10 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                 estado_quarto['janela_aberta'] = 0
             except requests.exceptions.RequestException as e:
                 return jsonify({'status':'erro', 'mensagem':'Ao tentar comunicar com a janela, houve erro de conexão'})
+            return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
 
         hora_atual = datetime.now().hour
-        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (3 <= hora_atual < 5):
+        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (9 <= hora_atual < 10):
             try:
 
                 requests.get(f'http://{placas_registradas.get("esp8266ar")}/desligar', timeout=5)
@@ -56,7 +58,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             except requests.exceptions.RequestException as e:
                 print(f"Erro na Skill da Madrugada: {e}")
 
-
+            return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
 
         return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
 
