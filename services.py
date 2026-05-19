@@ -45,7 +45,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
 
         hora_atual = datetime.now().hour
-        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (9 <= hora_atual < 10):
+        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (3 <= hora_atual < 5):
             try:
 
                 requests.get(f'http://{placas_registradas.get("esp8266ar")}/desligar', timeout=5)
