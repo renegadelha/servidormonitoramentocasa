@@ -23,7 +23,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             try:
 
                 if estado_quarto['janela_aberta'] == 1:
-                    requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=13)
+                    requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=5)
 
                     estado_quarto['janela_aberta'] = 0
 
@@ -38,7 +38,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
 
         if estado_quarto['dormir'] == 1 and temperatura < 26 and estado_quarto['janela_aberta'] == 1:
             try:
-                requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=13)
+                requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=5)
                 estado_quarto['janela_aberta'] = 0
             except requests.exceptions.RequestException as e:
                 return jsonify({'status':'erro', 'mensagem':'Ao tentar comunicar com a janela, houve erro de conexão'})
