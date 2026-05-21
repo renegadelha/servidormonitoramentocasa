@@ -26,6 +26,19 @@
                 <button class="btn btn-off" onclick="fetch('/interf/desligarar')">DESLIGAR</button>
             </div>
         </div>
+        <div class="card">
+            <h2>Ventilador</h2>
+            <div class="btn-group">
+                <button class="btn btn-on" onclick="fetch('/interf/ligarventilador')">ACIONAR</button>
+
+            </div>
+        </div>
+                <div class="card">
+            <h2>Umidificador</h2>
+            <div class="btn-group">
+                <button class="btn btn-on" onclick="fetch('/interf/ligarumidificador')">ACIONAR</button>
+            </div>
+        </div>
 
         <div class="card">
             <h2>Modo Dormir</h2>
@@ -35,8 +48,6 @@
             </label>
             <p id="status-dormir" style="margin-top: 15px; font-weight: bold; color: var(--danger);">Status: DESATIVADO</p>
         </div>
-
-
 
         <div class="card">
             <h2>Limite de Temperatura</h2>

@@ -193,3 +193,69 @@ def desligarar_endpoint():
 
     except requests.exceptions.RequestException as e:
         return jsonify({"erro": f"Falha de comunicação com a esp8266ar: {str(e)}"}), 503
+
+
+@inter_bp.route('/ligarventilador')
+def ligarventila():
+    esp32c3vent = placas_registradas.get('esp32c3vent')
+    if not esp32c3vent:
+        return jsonify({"erro": "IP da esp32c3vent não encontrado"}), 404
+
+    url = f"http://{esp32c3vent}/ventilador"
+    try:
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+            if estado_quarto['ventilador'] < 3:
+                estado_quarto['ventilador'] += 1
+                return jsonify({
+                    "status": "sucesso",
+                    "mensagem": "ventilador ligado com sucesso",
+                    "ventilador": "ligado"
+                }), 200
+
+            elif estado_quarto['ventilador'] == 3:
+                estado_quarto['ventilador'] = 0
+                return jsonify({
+                    "status": "sucesso",
+                    "mensagem": "ventilador desligado com sucesso",
+                    "ventilador": "desligado"
+                }), 200
+        else:
+            return jsonify({"erro": f"Placa retornou status inesperado: {response.status_code}"}), 500
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": f"Falha de comunicação com a esp32c3vent: {str(e)}"}), 503
+
+
+@inter_bp.route('/ligarumidificador')
+def ligarumidificador():
+    esp32c3vent = placas_registradas.get('esp32c3vent')
+    if not esp32c3vent:
+        return jsonify({"erro": "IP da esp32c3vent não encontrado"}), 404
+
+    url = f"http://{esp32c3vent}/umidificador"
+    try:
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+            if estado_quarto['umidificador'] < 3:
+                estado_quarto['umidificador'] += 1
+                return jsonify({
+                    "status": "sucesso",
+                    "mensagem": "umidificador ligado com sucesso",
+                    "umidificador": "ligado"
+                }), 200
+
+            elif estado_quarto['umidificador'] == 3:
+                estado_quarto['umidificador'] = 0
+                return jsonify({
+                    "status": "sucesso",
+                    "mensagem": "umidificador desligado com sucesso",
+                    "umidificador": "desligado"
+                }), 200
+        else:
+            return jsonify({"erro": f"Placa retornou status inesperado: {response.status_code}"}), 500
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": f"Falha de comunicação com a esp32c3vent: {str(e)}"}), 503
