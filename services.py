@@ -19,48 +19,73 @@ def ajustar(temp_str, umid_str, dormir, aberta):
         umidade = float(umid_str)
         daofile.inserir_th(umidade, temperatura)
 
-        if estado_quarto['dormir'] == 1 and temperatura > estado_quarto['temperatura_limite'] and estado_quarto['ar_ligado'] == 0:
-            try:
-
+        # Só executa as regras de automação se o modo dormir estiver ativado
+        if estado_quarto['dormir'] == 1:
+            hora_atual = datetime.now().hour
+            ip_janela = placas_registradas.get("janela")
+            ip_ar = placas_registradas.get("esp8266ar")
+            
+            # --- REGRA 1: NOITES FRIAS (Abaixo de 26°C) ---
+            if temperatura < 26:
                 if estado_quarto['janela_aberta'] == 1:
-                    requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=5)
-
+                    requests.get(f'http://{ip_janela}/fechar', timeout=5)
+                    # A ESP32 desativa o modo dormir ao fechar, então reativamos
+                    requests.get(f'http://{ip_janela}/dormir', timeout=5)
                     estado_quarto['janela_aberta'] = 0
+                    estado_quarto['dormir'] = 1
+                if estado_quarto['ar_ligado'] == 1:
+                    requests.get(f'http://{ip_ar}/desligar', timeout=5)
+                    estado_quarto['ar_ligado'] = 0
+                print(f"Noite Fria ({temperatura}°C): Fechando tudo.")
 
+            # --- REGRA 2: NOITES QUENTES mas liguei AR (Abaixo de 26°C) ---
+            if temperatura < 26 and estado_quarto['ar_ligado'] == 1:
+                if estado_quarto['janela_aberta'] == 0:
+                    requests.get(f'http://{ip_janela}/abrir', timeout=5)
+                    estado_quarto['janela_aberta'] = 1
+                if estado_quarto['ar_ligado'] == 1:
+                    requests.get(f'http://{ip_ar}/desligar', timeout=5)
+                    estado_quarto['ar_ligado'] = 0
+                print(f"Noite Fria ({temperatura}°C): Fechando tudo.")
+
+
+            # --- REGRA 3: NOITES QUENTES (Acima de 2limite)
+            elif temperatura > estado_quarto['temperatura_limite']:
+                # Se estiver quente, fecha a janela para o ar condicionado ser eficiente
+                if estado_quarto['janela_aberta'] == 1:
+                    requests.get(f'http://{ip_janela}/fechar', timeout=5)
+                    # A ESP32 desativa o modo dormir ao fechar, então reativamos
+                    requests.get(f'http://{ip_janela}/dormir', timeout=5)
+                    estado_quarto['janela_aberta'] = 0
+                    estado_quarto['dormir'] = 1
+                
+                # Liga o ar condicionado se estiver desligado
                 if estado_quarto['ar_ligado'] == 0:
-                    requests.get(f'http://{placas_registradas.get("esp8266ar")}/ligar', timeout=3)
+                    requests.get(f'http://{ip_ar}/ligar', timeout=5)
                     estado_quarto['ar_ligado'] = 1
+                print(f"Noite Quente ({temperatura}°C): Ar condicionado ativado.")
 
-                return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
-            except requests.exceptions.RequestException as e:
-                print(f"Erro ao comunicar com as placas: {e}")
-                return jsonify({"status": "erro", "mensagem": "Erro ao comunicar com as placas!"}), 503
+            # --- SKILL MADRUGADA (Otimização Energética entre 03h e 05h) ---
+            # Se o ar estiver ligado mas a temperatura externa/interna já está baixando
+            if (3 <= hora_atual < 5) and estado_quarto['ar_ligado'] == 1 and temperatura <= 27:
+                try:
+                    requests.get(f'http://{ip_ar}/desligar', timeout=5)
+                    estado_quarto['ar_ligado'] = 0
+                    requests.get(f'http://{ip_janela}/abrir', timeout=5)
+                    estado_quarto['janela_aberta'] = 1
+                    print("Skill Madrugada: Trocando Ar por janela para economizar.")
+                except Exception as e:
+                    print(f"Erro na Skill Madrugada: {e}")
 
-        if estado_quarto['dormir'] == 1 and temperatura < 26 and estado_quarto['janela_aberta'] == 1:
-            try:
-                requests.get(f'http://{placas_registradas.get("janela")}/fechar', timeout=5)
-                estado_quarto['janela_aberta'] = 0
-            except requests.exceptions.RequestException as e:
-                return jsonify({'status':'erro', 'mensagem':'Ao tentar comunicar com a janela, houve erro de conexão'})
-            return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
+            return jsonify({"status": "sucesso", "mensagem": f"Regras aplicadas para {temperatura}°C"}), 200
 
-        hora_atual = datetime.now().hour
-        if estado_quarto['janela_aberta'] == 0 and estado_quarto['dormir'] == 1 and estado_quarto['ar_ligado'] == 1 and (3 <= hora_atual < 5):
-            try:
+        return jsonify({"status": "sucesso", "mensagem": "Dados gravados (Modo Acordado)"}), 200
 
-                requests.get(f'http://{placas_registradas.get("esp8266ar")}/desligar', timeout=5)
-                estado_quarto['ar_ligado'] = 0
-
-                requests.get(f'http://{placas_registradas.get("janela")}/abrir', timeout=5)
-                estado_quarto['janela_aberta'] = 1
-
-                print("Skill Madrugada ativada: Ar desligado e janela aberta.")
-            except requests.exceptions.RequestException as e:
-                print(f"Erro na Skill da Madrugada: {e}")
-
-            return jsonify({"status": "sucesso", "mensagem": "ação executada!"}), 200
-
-        return jsonify({"status": "sucesso", "mensagem": "Dados gravados com sucesso!"}), 200
+    except ValueError:
+        return jsonify({"erro": "Os valores devem ser numéricos (float)"}), 400
+    except requests.exceptions.RequestException as e:
+        print(f"Erro de comunicação: {e}")
+        return jsonify({"status": "erro", "mensagem": "Falha ao comunicar com os dispositivos"}), 503
 
     except ValueError:
         return jsonify({"erro": "Os valores devem ser numéricos (float)"}), 400
