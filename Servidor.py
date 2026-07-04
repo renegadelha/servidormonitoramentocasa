@@ -13,7 +13,7 @@ app.register_blueprint(inter_bp, url_prefix='/interf')
 
 ip_local = '0.0.0.0'
 porta_Local = 5050
-
+print('oi')
 
 @app.route('/placas', methods=['GET'])
 def ver_status():
@@ -35,7 +35,7 @@ def registrar_ip():
 
     if not nome_placa or not ip_placa:
         return jsonify({"erro": "Parâmetros 'placa' e 'ip' são obrigatórios"}), 400
-
+    #salvando dentro do dicionário
     placas_registradas[nome_placa] = ip_placa
 
     return jsonify({"status": "sucesso", "mensagem": "IP registrado corretamente"}), 200
@@ -61,7 +61,7 @@ def listar():
 def get_status():
     return services.pegar_status()
 
-@app.route('/monitoramento', methods=['POST'])  # cadastrando uma rota
+@app.route('/monitoramento', methods=['POST'])
 def recebe_dados():
     data = request.json
     temp = data['temperatura']

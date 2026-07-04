@@ -1,7 +1,7 @@
 import telebot
 import requests
 
-# Configurações
+
 TOKEN = '8687595101:AAFCnyw9zTMOwLmJhRwmgYhahFXFbulMk-I'
 MEU_CHAT_ID = 8357123466
 URL_SERVIDOR_LOCAL = 'http://192.168.0.117/'
