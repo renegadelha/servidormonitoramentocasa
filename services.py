@@ -13,10 +13,14 @@ def ajustar(temp_str, umid_str, dormir, aberta):
     if temp_str is None or umid_str is None:
         print("Erro: Requisição recebida sem os parâmetros corretos.")
         return jsonify({"erro": "Faltam parâmetros de temperatura ou umidade"}), 400
-
+    
     try:
         temperatura = float(temp_str)
         umidade = float(umid_str)
+        if temperatura > 70:
+            print(f"Erro: Temperatura recebida ({temperatura}°C) é irrealista.")
+            return jsonify({"erro": "Temperatura irrealista"}), 400
+        
         daofile.inserir_th(umidade, temperatura)
 
         # Só executa as regras de automação se o modo dormir estiver ativado
