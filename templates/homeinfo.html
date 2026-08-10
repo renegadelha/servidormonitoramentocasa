@@ -9,7 +9,18 @@
 <body>
 
     <h1 style="color: var(--accent);">Controle do Quarto</h1>
-
+    <!-- Novo Card de Monitoramento -->
+        <div class="card">
+            <h2>Condições do Quarto</h2>
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 15px; font-size: 1.5rem; font-weight: bold; color: var(--accent);">
+                <div>
+                    🌡️ <span id="temp-atual">{{temperatura_atual}}</span>°C
+                </div>
+                <div>
+                    💧 <span id="umid-atual">{{umidade_atual}}</span>%
+                </div>
+            </div>
+        </div>
     <div class="dashboard">
         <div class="card">
             <h2>Controle da Janela</h2>

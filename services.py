@@ -22,6 +22,8 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             return jsonify({"erro": "Temperatura irrealista"}), 400
         
         daofile.inserir_th(umidade, temperatura)
+        estado_quarto['temperatura_atual'] = float(temperatura)
+        estado_quarto['umidade_atual'] = float(umidade)
 
         # Só executa as regras de automação se o modo dormir estiver ativado
         if estado_quarto['dormir'] == 1:
@@ -30,7 +32,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             ip_ar = placas_registradas.get("esp8266ar")
             
             # --- REGRA 1: NOITES FRIAS (Abaixo de 26°C) ---
-            if temperatura < 26:
+            if temperatura < 26 and estado_quarto['ar_ligado'] == 0:
                 if estado_quarto['janela_aberta'] == 1:
                     requests.get(f'http://{ip_janela}/fechar', timeout=5)
                     # A ESP32 desativa o modo dormir ao fechar, então reativamos
@@ -43,7 +45,8 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                 print(f"Noite Fria ({temperatura}°C): Fechando tudo.")
 
             # --- REGRA 2: NOITES QUENTES mas liguei AR (Abaixo de 26°C) ---
-            if temperatura < 26 and estado_quarto['ar_ligado'] == 1:
+            #falta melhorar a regra
+            elif temperatura < 26 and estado_quarto['ar_ligado'] == 1:
                 if estado_quarto['janela_aberta'] == 0:
                     requests.get(f'http://{ip_janela}/abrir', timeout=5)
                     estado_quarto['janela_aberta'] = 1

@@ -4,7 +4,7 @@ import services
 from controllers.admin_bp import admin_bp
 from controllers.graficos_bp import graf_bp
 from controllers.interface_bp import inter_bp
-from config import placas_registradas
+from config import placas_registradas, estado_quarto
 
 app = Flask(__name__)
 app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -24,7 +24,9 @@ def ver_status():
 
 @app.route('/')
 def home():
-    return render_template('homeinfo.html')
+    temp = estado_quarto['temperatura_atual']
+    umid = estado_quarto['umidade_atual']
+    return render_template('homeinfo.html',temperatura_atual=temp, umidade_atual=umid)
 
 
 @app.route('/meuip', methods=['GET'])
