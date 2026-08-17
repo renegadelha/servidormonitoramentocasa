@@ -63,6 +63,11 @@ def listar():
 def get_status():
     return services.pegar_status()
 
+
+@app.route('/agendador')
+def pagina_agendador():
+    return render_template('agendador.html')
+
 @app.route('/monitoramento', methods=['POST'])
 def recebe_dados():
     data = request.json

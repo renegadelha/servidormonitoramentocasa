@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/homeinfo.css">
+    <title>Agendador do Quarto</title>
+    <style>
+        /* Estilos adicionais específicos para o formulário do agendador */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background-color: #222; /* Ajuste conforme seu tema dark */
+            color: #fff;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            appearance: none; /* Remove seta padrão em alguns navegadores mobile */
+        }
+        /* Adiciona uma seta customizada para os selects */
+        select.form-control {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+            padding-right: 40px;
+        }
+        .time-inputs {
+            display: flex;
+            gap: 15px;
+        }
+        .time-inputs > div {
+            flex: 1;
+        }
+        #mensagem-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="color: var(--accent);">Timer dos Dispositivos</h1>
+
+    <div class="dashboard">
+        <div class="card" style="max-width: 500px; margin: 0 auto; grid-column: 1 / -1;">
+            <h2>Programar Desligamento</h2>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="dispositivo">Escolha o Dispositivo:</label>
+                <select id="dispositivo" class="form-control">
+                    <option value="ar">Ar Condicionado</option>
+                    <option value="ventilador">Ventilador</option>
+                    <option value="umidificador">Umidificador</option>
+                </select>
+            </div>
+
+            <div class="form-group time-inputs">
+                <div>
+                    <label for="horas">Horas:</label>
+                    <select id="horas" class="form-control">
+                        <option value="0">0 horas</option>
+                        <option value="1">1 hora</option>
+                        <option value="2">2 horas</option>
+                        <option value="3">3 horas</option>
+                        <option value="4">4 horas</option>
+                        <option value="5">5 horas</option>
+                        <option value="6">6 horas</option>
+                        <option value="7">7 horas</option>
+                        <option value="8">8 horas</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="minutos">Minutos:</label>
+                    <select id="minutos" class="form-control">
+                        <option value="0">0 min</option>
+                        <option value="15">15 min</option>
+                        <option value="30" selected>30 min</option>
+                        <option value="45">45 min</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group" style="margin-top: 25px;">
+                <button class="btn btn-action" onclick="enviarAgendamento()">AGENDAR TÉRMINO</button>
+                <button class="btn btn-off" onclick="cancelarAgendamento()">CANCELAR TIMER</button>
+            </div>
+
+            <div id="mensagem-status"></div>
+
+            <div style="margin-top: 20px;">
+                <a href="/" class="btn btn-nav" style="width: 100%; text-align: center; display: block; box-sizing: border-box;">VOLTAR AO CONTROLE PRINCIPAL</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mostrarMensagem(texto, cor) {
+            const divMensagem = document.getElementById('mensagem-status');
+            divMensagem.style.display = 'block';
+            divMensagem.style.backgroundColor = cor === 'sucesso' ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)';
+            divMensagem.style.color = cor === 'sucesso' ? 'var(--success, #28a745)' : 'var(--danger, #dc3545)';
+            divMensagem.style.border = `1px solid ${cor === 'sucesso' ? '#28a745' : '#dc3545'}`;
+            divMensagem.innerText = texto;
+        }
+
+        function enviarAgendamento() {
+            const disp = document.getElementById('dispositivo').value;
+            const h = document.getElementById('horas').value || 0;
+            const m = document.getElementById('minutos').value || 0;
+
+            if (h == 0 && m == 0) {
+                mostrarMensagem("Por favor, selecione um tempo maior que zero para agendar.", "erro");
+                return;
+            }
+
+            fetch(`/interf/agendar?dispositivo=${disp}&horas=${h}&minutos=${m}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "sucesso") {
+                        mostrarMensagem(data.mensagem, "sucesso");
+                    } else {
+                        mostrarMensagem(data.erro || "Erro ao agendar.", "erro");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    mostrarMensagem("Falha de comunicação com o servidor.", "erro");
+                });
+        }
+
+        function cancelarAgendamento() {
+            const disp = document.getElementById('dispositivo').value;
+
+            fetch(`/interf/agendar?dispositivo=${disp}&horas=0&minutos=0`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "sucesso") {
+                        mostrarMensagem(data.mensagem, "erro");
+                    } else {
+                        mostrarMensagem(data.erro || "Erro ao cancelar.", "erro");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    mostrarMensagem("Falha de comunicação com o servidor.", "erro");
+                });
+        }
+    </script>
+</body>
+</html>

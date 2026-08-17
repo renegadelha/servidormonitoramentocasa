@@ -259,3 +259,22 @@ def ligarumidificador():
 
     except requests.exceptions.RequestException as e:
         return jsonify({"erro": f"Falha de comunicação com a esp32c3vent: {str(e)}"}), 503
+
+
+@inter_bp.route('/agendar', methods=['GET'])
+def agendar_desligamento():
+    dispositivo = request.args.get('dispositivo')
+
+    if dispositivo not in ['ar', 'ventilador', 'umidificador']:
+        return jsonify({"erro": "Dispositivo inválido. Use: ar, ventilador ou umidificador"}), 400
+
+    try:
+        horas = float(request.args.get('horas', 0))
+        minutos = float(request.args.get('minutos', 0))
+    except ValueError:
+        return jsonify({"erro": "Horas e minutos devem ser números."}), 400
+
+    # Chama a lógica no arquivo de serviços
+    resultado = services.criar_agendamento(dispositivo, horas, minutos)
+
+    return jsonify(resultado), 200
