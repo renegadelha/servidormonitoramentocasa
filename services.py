@@ -64,9 +64,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
 
                 if estado_quarto['janela_aberta'] == 1:
                     requests.get(f'http://{ip_janela}/fechar', timeout=5)
-                    requests.get(f'http://{ip_janela}/dormir', timeout=5)  # Reativa o modo dormir da ESP
                     estado_quarto['janela_aberta'] = 0
-                    estado_quarto['dormir'] = 1
                     acoes.append("Janela Fechada")
 
                 if estado_quarto['ar_ligado'] == 0:
