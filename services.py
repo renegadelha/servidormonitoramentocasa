@@ -207,7 +207,7 @@ def vigiar_nivel_agua():
                 print(f"[ÁGUA] Falha ao ler sensor: {e}")
 
         # Quer tenha feito a checagem na placa ou apenas pulado o IF, aguarda 60s para o próximo ciclo
-        time.sleep(300)
+        time.sleep(200)
 
 
 def alternar_monitor_agua(ativar):

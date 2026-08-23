@@ -103,8 +103,23 @@
 
 
                     atualizarInterfaceDormir(data.modo_dormir);
-                })
-                .catch(err => console.error("Erro ao sincronizar com o servidor:", err));
+                }).catch(err => console.error("Erro ao sincronizar com o servidor:", err));
+
+            fetch('/interf/checar_agua')
+                .then(response => response.json())
+                .then(data => {
+                    const displayAgua = document.getElementById('display-agua');
+                    displayAgua.innerText = data.nivel;
+
+                    // Muda a cor dependendo do status
+                    if (data.nivel === "Cheio") {
+                        displayAgua.style.color = "var(--success, #28a745)";
+                    } else if (data.nivel === "Vazio") {
+                        displayAgua.style.color = "var(--danger, #dc3545)";
+                    } else {
+                        displayAgua.style.color = "#aaa"; // Cinza para offline ou erro
+                    }
+                }).catch(err => console.error("Erro ao verificar água:", err));
         };
 
         function ajustarTemp(v) {
@@ -141,23 +156,7 @@
                 });
         }
 
-        // Busca o nível da água na ESP32 sob demanda
-        fetch('/interf/checar_agua')
-            .then(response => response.json())
-            .then(data => {
-                const displayAgua = document.getElementById('display-agua');
-                displayAgua.innerText = data.nivel;
 
-                // Muda a cor dependendo do status
-                if (data.nivel === "Cheio") {
-                    displayAgua.style.color = "var(--success, #28a745)";
-                } else if (data.nivel === "Vazio") {
-                    displayAgua.style.color = "var(--danger, #dc3545)";
-                } else {
-                    displayAgua.style.color = "#aaa"; // Cinza para offline ou erro
-                }
-            })
-            .catch(err => console.error("Erro ao verificar água:", err));
     </script>
 </body>
 </html>
