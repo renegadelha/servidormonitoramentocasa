@@ -118,7 +118,8 @@ def status_geral():
 
     configuracoes = {
         "modo_dormir": estado_quarto['dormir'],
-        "temp_limite": estado_quarto['temperatura_limite']
+        "temp_limite": estado_quarto['temperatura_limite'],
+        "monitor_agua": estado_quarto.get('monitor_agua', False)
     }
     return jsonify(configuracoes)
 
@@ -287,3 +288,24 @@ def controlar_agua():
     resultado = services.alternar_monitor_agua(ativar)
     return jsonify(resultado), 200
 
+@inter_bp.route('/checar_agua', methods=['GET'])
+def checar_agua_endpoint():
+    ip_vent = placas_registradas.get('esp32c3vent')
+    if not ip_vent:
+        return jsonify({"nivel": "Desconhecido", "erro": "IP da placa não encontrado"}), 404
+
+    url = f"http://{ip_vent}/nivelagua"
+    try:
+        # Timeout bem curto (2s) para não travar o carregamento da página web
+        response = requests.get(url, timeout=2)
+
+        if response.status_code == 200:
+            valor = response.text.strip()
+            # Retorna 0 (Cheio) ou 1 (Vazio) traduzido para a interface
+            status_texto = "Vazio" if valor == '1' else "Cheio"
+            return jsonify({"nivel": status_texto}), 200
+        else:
+            return jsonify({"nivel": "Erro", "erro": f"Status: {response.status_code}"}), 500
+
+    except requests.exceptions.RequestException:
+        return jsonify({"nivel": "Offline", "erro": "Falha de comunicação com a placa"}), 503

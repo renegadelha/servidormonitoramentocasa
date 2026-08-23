@@ -121,6 +121,28 @@
     </div>
 
     <script>
+
+        // Sincroniza o botão com o servidor assim que a página carrega
+        window.onload = function() {
+            fetch('/interf/status_geral')
+                .then(response => response.json())
+                .then(data => {
+                    const checkbox = document.getElementById('toggle-agua');
+                    const statusText = document.getElementById('status-agua');
+
+                    if (data.monitor_agua === true) {
+                        checkbox.checked = true;
+                        statusText.innerText = "Status: ATIVADO";
+                        statusText.style.color = "var(--success, #28a745)";
+                    } else {
+                        checkbox.checked = false;
+                        statusText.innerText = "Status: DESATIVADO";
+                        statusText.style.color = "var(--danger, #dc3545)";
+                    }
+                })
+                .catch(err => console.error("Erro ao puxar o status inicial:", err));
+        };
+
         function mostrarMensagem(texto, cor) {
             const divMensagem = document.getElementById('mensagem-status');
             divMensagem.style.display = 'block';

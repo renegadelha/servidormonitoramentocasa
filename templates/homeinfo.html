@@ -48,11 +48,15 @@
 
             </div>
         </div>
-                <div class="card">
+        <div class="card">
             <h2>Umidificador</h2>
             <div class="btn-group">
                 <button class="btn btn-on" onclick="fetch('/interf/ligarumidificador')">ACIONAR</button>
             </div>
+            <!-- Novo mostrador de água -->
+            <p style="margin-top: 15px; font-weight: bold; color: var(--accent);">
+                Reservatório: <span id="display-agua">Verificando...</span>
+            </p>
         </div>
 
         <div class="card">
@@ -136,6 +140,24 @@
                     alert("Erro de comunicação!");
                 });
         }
+
+        // Busca o nível da água na ESP32 sob demanda
+        fetch('/interf/checar_agua')
+            .then(response => response.json())
+            .then(data => {
+                const displayAgua = document.getElementById('display-agua');
+                displayAgua.innerText = data.nivel;
+
+                // Muda a cor dependendo do status
+                if (data.nivel === "Cheio") {
+                    displayAgua.style.color = "var(--success, #28a745)";
+                } else if (data.nivel === "Vazio") {
+                    displayAgua.style.color = "var(--danger, #dc3545)";
+                } else {
+                    displayAgua.style.color = "#aaa"; // Cinza para offline ou erro
+                }
+            })
+            .catch(err => console.error("Erro ao verificar água:", err));
     </script>
 </body>
 </html>
