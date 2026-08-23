@@ -294,7 +294,7 @@ def checar_agua_endpoint():
     if not ip_vent:
         return jsonify({"nivel": "Desconhecido", "erro": "IP da placa não encontrado"}), 404
 
-    url = f"http://{ip_vent}/nivelagua"
+    url = f"http://{ip_vent}/nivel"
     try:
         # Timeout bem curto (2s) para não travar o carregamento da página web
         response = requests.get(url, timeout=2)

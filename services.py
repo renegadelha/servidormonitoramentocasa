@@ -174,7 +174,7 @@ def criar_agendamento(dispositivo, horas, minutos):
 
 
 def vigiar_nivel_agua():
-    """Roda em loop silencioso a cada 60s, mas só acessa a rede se o umidificador estiver ligado."""
+    """Roda em loop silencioso, mas só acessa a rede se o umidificador estiver ligado."""
     ip_vent = placas_registradas.get("esp32c3vent")
     if not ip_vent:
         print("[ÁGUA] Erro: IP da esp32c3vent não encontrado.")
@@ -182,33 +182,33 @@ def vigiar_nivel_agua():
 
     print("[ÁGUA] Monitoramento do nível de água INICIADO (Standby).")
 
-    # O loop principal continua rodando enquanto a chave do painel for True
     while estado_quarto.get('monitor_agua', False):
-
-        # A MÁGICA AQUI: Só faz a requisição HTTP para a placa se o aparelho estiver ligado (nível 1, 2 ou 3)
         if estado_quarto.get('umidificador', 0) > 0:
             try:
+                # Padronizado para /nivelagua (se na sua ESP for /nivel, mude aqui e no interface_bp.py)
                 resposta = requests.get(f'http://{ip_vent}/nivel', timeout=5)
 
-                # Se a placa responder 1 (vazio)
                 if resposta.status_code == 200 and resposta.text.strip() == '1':
                     print("[ÁGUA] NÍVEL BAIXO DETECTADO! Desligando umidificador...")
 
-                    # Usa a mesma lógica cíclica para garantir que ele volte para o 0
-                    while estado_quarto['umidificador'] != 0:
+                    # TRAVA DE SEGURANÇA: Limite de 4 tentativas para evitar loop infinito na rede
+                    tentativas = 0
+                    while estado_quarto['umidificador'] != 0 and tentativas < 4:
                         requests.get("http://127.0.0.1:5050/interf/ligarumidificador", timeout=5)
+                        tentativas += 1
                         time.sleep(1.5)
 
-                    # Desativa o botão do painel de monitoramento para o usuário saber que a proteção atuou
+                    if estado_quarto['umidificador'] != 0:
+                        print("[ÁGUA] ALERTA: Falha ao tentar desligar o umidificador (ESP não respondeu).")
+
                     estado_quarto['monitor_agua'] = False
                     break
 
             except Exception as e:
                 print(f"[ÁGUA] Falha ao ler sensor: {e}")
 
-        # Quer tenha feito a checagem na placa ou apenas pulado o IF, aguarda 60s para o próximo ciclo
+        # Retornado para 60 segundos. Protege a vida útil do aparelho se a água secar rápido.
         time.sleep(200)
-
 
 def alternar_monitor_agua(ativar):
     """Ativa ou desativa a Thread dependendo da ordem do painel web"""
