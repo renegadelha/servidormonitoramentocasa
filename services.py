@@ -3,7 +3,7 @@ import requests
 from config import estado_quarto, placas_registradas
 import daofile
 from datetime import datetime
-from threading import Timer
+from threading import Timer, Thread
 import time
 
 
@@ -171,3 +171,59 @@ def criar_agendamento(dispositivo, horas, minutos):
 
     timers_ativos[dispositivo] = t
     return {"status": "sucesso", "mensagem": f"{dispositivo.capitalize()} será desligado em {horas}h e {minutos}m."}
+
+
+def vigiar_nivel_agua():
+    """Roda em loop silencioso a cada 60s, mas só acessa a rede se o umidificador estiver ligado."""
+    ip_vent = placas_registradas.get("esp32c3vent")
+    if not ip_vent:
+        print("[ÁGUA] Erro: IP da esp32c3vent não encontrado.")
+        return
+
+    print("[ÁGUA] Monitoramento do nível de água INICIADO (Standby).")
+
+    # O loop principal continua rodando enquanto a chave do painel for True
+    while estado_quarto.get('monitor_agua', False):
+
+        # A MÁGICA AQUI: Só faz a requisição HTTP para a placa se o aparelho estiver ligado (nível 1, 2 ou 3)
+        if estado_quarto.get('umidificador', 0) > 0:
+            try:
+                resposta = requests.get(f'http://{ip_vent}/nivel', timeout=5)
+
+                # Se a placa responder 1 (vazio)
+                if resposta.status_code == 200 and resposta.text.strip() == '1':
+                    print("[ÁGUA] NÍVEL BAIXO DETECTADO! Desligando umidificador...")
+
+                    # Usa a mesma lógica cíclica para garantir que ele volte para o 0
+                    while estado_quarto['umidificador'] != 0:
+                        requests.get("http://127.0.0.1:5050/interf/ligarumidificador", timeout=5)
+                        time.sleep(1.5)
+
+                    # Desativa o botão do painel de monitoramento para o usuário saber que a proteção atuou
+                    estado_quarto['monitor_agua'] = False
+                    break
+
+            except Exception as e:
+                print(f"[ÁGUA] Falha ao ler sensor: {e}")
+
+        # Quer tenha feito a checagem na placa ou apenas pulado o IF, aguarda 60s para o próximo ciclo
+        time.sleep(300)
+
+
+def alternar_monitor_agua(ativar):
+    """Ativa ou desativa a Thread dependendo da ordem do painel web"""
+    estado_atual = estado_quarto.get('monitor_agua', False)
+    novo_estado = ativar == 'true'
+
+    if novo_estado and not estado_atual:
+        estado_quarto['monitor_agua'] = True
+        t = Thread(target=vigiar_nivel_agua)
+        t.daemon = True  # Garante que a thread feche se o Gunicorn for reiniciado
+        t.start()
+        return {"status": "sucesso", "mensagem": "Monitoramento ATIVADO.", "monitor_agua": True}
+
+    elif not novo_estado and estado_atual:
+        estado_quarto['monitor_agua'] = False
+        return {"status": "sucesso", "mensagem": "Monitoramento DESATIVADO.", "monitor_agua": False}
+
+    return {"status": "aviso", "mensagem": "O estado já é o solicitado.", "monitor_agua": novo_estado}

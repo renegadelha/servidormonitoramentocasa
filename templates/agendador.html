@@ -60,6 +60,18 @@
         <div class="card" style="max-width: 500px; margin: 0 auto; grid-column: 1 / -1;">
             <h2>Programar Desligamento</h2>
 
+            <div class="card" style="max-width: 500px; margin: 20px auto; grid-column: 1 / -1;">
+                <h2>Proteção Contra Falta de Água</h2>
+                <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 15px; text-align: left;">
+                    Se ativado, o sistema desligará o umidificador automaticamente se o nível de água baixar.
+                </p>
+                <label class="switch" style="display: block; margin: 0 auto;">
+                    <input type="checkbox" id="toggle-agua" onchange="toggleMonitorAgua()">
+                    <span class="slider"></span>
+                </label>
+                <p id="status-agua" style="margin-top: 15px; font-weight: bold; color: var(--danger);">Status: DESATIVADO</p>
+            </div>
+
             <div class="form-group" style="margin-top: 20px;">
                 <label for="dispositivo">Escolha o Dispositivo:</label>
                 <select id="dispositivo" class="form-control">
@@ -158,6 +170,31 @@
                 .catch(err => {
                     console.error(err);
                     mostrarMensagem("Falha de comunicação com o servidor.", "erro");
+                });
+        }
+
+        function toggleMonitorAgua() {
+            const checkbox = document.getElementById('toggle-agua');
+            const statusText = document.getElementById('status-agua');
+            const ativar = checkbox.checked;
+
+            fetch(`/interf/agua?ativar=${ativar}`, { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.monitor_agua) {
+                        statusText.innerText = "Status: ATIVADO";
+                        statusText.style.color = "var(--success, #28a745)";
+                    } else {
+                        statusText.innerText = "Status: DESATIVADO";
+                        statusText.style.color = "var(--danger, #dc3545)";
+                    }
+                    mostrarMensagem(data.mensagem, "sucesso");
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    // Desfaz o clique no botão em caso de erro de rede
+                    checkbox.checked = !ativar;
+                    mostrarMensagem("Erro ao comunicar com o servidor.", "erro");
                 });
         }
     </script>

@@ -278,3 +278,12 @@ def agendar_desligamento():
     resultado = services.criar_agendamento(dispositivo, horas, minutos)
 
     return jsonify(resultado), 200
+
+
+@inter_bp.route('/agua', methods=['GET'])
+def controlar_agua():
+    # Recebe 'true' ou 'false' do botão HTML
+    ativar = request.args.get('ativar')
+    resultado = services.alternar_monitor_agua(ativar)
+    return jsonify(resultado), 200
+
