@@ -7,22 +7,47 @@ from threading import Timer, Thread
 import time
 
 
-def ajustar(temp_str, umid_str, dormir, aberta):
-    estado_quarto['dormir'] = int(dormir)
-    estado_quarto['janela_aberta'] = int(aberta)
+def _acionar(ip, acao, dispositivo):
+    """Envia um comando e só considera o estado alterado após confirmação da placa."""
+    if not ip:
+        raise requests.exceptions.RequestException(
+            f"IP da placa de {dispositivo} não encontrado."
+        )
 
+    resposta = requests.get(f'http://{ip}/{acao}', timeout=5)
+    if resposta.status_code not in (200, 208):
+        raise requests.exceptions.RequestException(
+            f"Placa de {dispositivo} recusou /{acao} (status {resposta.status_code})."
+        )
+
+
+def _registrar_acoes(temperatura, umidade, acoes):
+    """Persiste apenas decisões que realmente resultaram em comandos enviados."""
+    if acoes:
+        daofile.registrar_acao_agente(temperatura, umidade, estado_quarto, acoes)
+
+
+def ajustar(temp_str, umid_str, dormir, aberta):
     print(f"Recebido - Temp: {temp_str}, Umid: {umid_str}, Dormir: {dormir}, Aberta(ESP): {aberta}")
 
-    if temp_str is None or umid_str is None:
+    if None in (temp_str, umid_str, dormir, aberta):
         print("Erro: Requisição recebida sem os parâmetros corretos.")
-        return jsonify({"erro": "Faltam parâmetros de temperatura ou umidade"}), 400
+        return jsonify({"erro": "Faltam parâmetros de temperatura, umidade, dormir ou aberta"}), 400
 
     try:
         temperatura = float(temp_str)
         umidade = float(umid_str)
-        if temperatura > 70:
+        modo_dormir = int(dormir)
+        janela_aberta = int(aberta)
+        if modo_dormir not in (0, 1) or janela_aberta not in (0, 1):
+            return jsonify({"erro": "Os estados dormir e aberta devem ser 0 ou 1"}), 400
+        if not -20 <= temperatura <= 70:
             print(f"Erro: Temperatura recebida ({temperatura}°C) é irrealista.")
             return jsonify({"erro": "Temperatura irrealista"}), 400
+
+        # Os estados enviados pela ESP são a fonte de verdade para a janela e o modo dormir.
+        estado_quarto['dormir'] = modo_dormir
+        estado_quarto['janela_aberta'] = janela_aberta
 
         daofile.inserir_th(umidade, temperatura)
         estado_quarto['temperatura_atual'] = float(temperatura)
@@ -30,7 +55,6 @@ def ajustar(temp_str, umid_str, dormir, aberta):
 
         ip_janela = placas_registradas.get("janela")
         ip_ar = placas_registradas.get("esp8266ar")
-        ip_vent = placas_registradas.get("esp32c3vent")
 
         # ---------------------------------------------------------
         # REGRAS AUTOMÁTICAS DO QUARTO
@@ -39,23 +63,24 @@ def ajustar(temp_str, umid_str, dormir, aberta):
             hora_atual = datetime.now().hour
 
             # --- REGRA 1: ALCANCE DE CONFORTO (Abaixo de 26°C) ---
-            # O quarto já resfriou o suficiente. Desliga o ar e abre a janela
-            # para evitar o efeito "estufa" e manter a circulação com o ar da rua.
+            # Primeiro desliga o ar e só depois abre a janela. Essa ordem impede
+            # que os dois permaneçam ligados/abertos durante a transição.
             if temperatura < 26:
                 acoes = []
 
-                if estado_quarto['janela_aberta'] == 0:
-                    requests.get(f'http://{ip_janela}/abrir', timeout=5)
-                    estado_quarto['janela_aberta'] = 1
-                    acoes.append("Janela Aberta")
-
                 if estado_quarto['ar_ligado'] == 1:
-                    requests.get(f'http://{ip_ar}/desligar', timeout=5)
+                    _acionar(ip_ar, 'desligar', 'ar-condicionado')
                     estado_quarto['ar_ligado'] = 0
                     acoes.append("Ar Desligado")
 
+                if estado_quarto['janela_aberta'] == 0:
+                    _acionar(ip_janela, 'abrir', 'janela')
+                    estado_quarto['janela_aberta'] = 1
+                    acoes.append("Janela Aberta")
+
                 if acoes:
                     print(f"Conforto Atingido ({temperatura}°C): {', '.join(acoes)} para manter a circulação.")
+                    _registrar_acoes(temperatura, umidade, acoes)
 
             # --- REGRA 2: NOITES QUENTES (Acima do Limite de Conforto) ---
             # Temperatura subiu muito: isola o quarto fechando a janela e liga o resfriamento.
@@ -63,29 +88,46 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                 acoes = []
 
                 if estado_quarto['janela_aberta'] == 1:
-                    requests.get(f'http://{ip_janela}/fechar', timeout=5)
+                    _acionar(ip_janela, 'fechar', 'janela')
                     estado_quarto['janela_aberta'] = 0
                     acoes.append("Janela Fechada")
 
                 if estado_quarto['ar_ligado'] == 0:
-                    requests.get(f'http://{ip_ar}/ligar', timeout=5)
+                    _acionar(ip_ar, 'ligar', 'ar-condicionado')
                     estado_quarto['ar_ligado'] = 1
                     acoes.append("Ar Ligado")
 
                 if acoes:
                     print(f"Quarto Quente ({temperatura}°C): {', '.join(acoes)} para resfriamento.")
+                    _registrar_acoes(temperatura, umidade, acoes)
+
+            # --- REGRA 3: INVARIANTE DE SEGURANÇA ---
+            # A faixa entre 26°C e o limite é uma histerese: não liga nem desliga
+            # o ar. Ainda assim, nunca permite ar ligado com a janela aberta.
+            elif estado_quarto['ar_ligado'] == 1 and estado_quarto['janela_aberta'] == 1:
+                _acionar(ip_janela, 'fechar', 'janela')
+                estado_quarto['janela_aberta'] = 0
+                print(
+                    f"Correção de segurança ({temperatura}°C): "
+                    "janela fechada porque o ar-condicionado está ligado."
+                )
+                _registrar_acoes(temperatura, umidade, ["Janela Fechada (segurança)"])
 
             # --- SKILL MADRUGADA (Otimização Energética entre 03h e 05h) ---
             if (2 <= hora_atual < 5) and estado_quarto['ar_ligado'] == 1 and temperatura <= 27:
                 try:
-                    requests.get(f'http://{ip_ar}/desligar', timeout=5)
+                    acoes_madrugada = []
+                    _acionar(ip_ar, 'desligar', 'ar-condicionado')
                     estado_quarto['ar_ligado'] = 0
+                    acoes_madrugada.append("Ar Desligado (madrugada)")
 
                     if estado_quarto['janela_aberta'] == 0:
-                        requests.get(f'http://{ip_janela}/abrir', timeout=5)
+                        _acionar(ip_janela, 'abrir', 'janela')
                         estado_quarto['janela_aberta'] = 1
+                        acoes_madrugada.append("Janela Aberta (madrugada)")
 
                     print("Skill Madrugada: Trocando Ar por janela para economizar energia.")
+                    _registrar_acoes(temperatura, umidade, acoes_madrugada)
                 except Exception as e:
                     print(f"Erro na Skill Madrugada: {e}")
 

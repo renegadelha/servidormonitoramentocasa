@@ -1,6 +1,81 @@
 import sqlite3 as sqlite
 import datetime
 
+
+# Este banco é separado da telemetria bruta: só recebe eventos quando o agente
+# automático toma uma ação. O limite mantém o arquivo pequeno mesmo após anos.
+ARQUIVO_LOG_AGENTE = 'log_agente.sqlite'
+RETENCAO_LOG_AGENTE_DIAS = 90
+LIMITE_LOG_AGENTE = 3000
+
+
+def registrar_acao_agente(temperatura, umidade, estado, acoes):
+    """Registra uma decisão já executada pelo agente sem interromper a automação."""
+    try:
+        with sqlite.connect(ARQUIVO_LOG_AGENTE) as conn:
+            # auto_vacuum só tem efeito ao criar o banco; reduz espaço livre após a retenção.
+            conn.execute('PRAGMA auto_vacuum = INCREMENTAL')
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS acoes_agente (
+                    id INTEGER PRIMARY KEY,
+                    horario TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+                    temperatura REAL NOT NULL,
+                    umidade REAL NOT NULL,
+                    dormir INTEGER NOT NULL,
+                    janela_aberta INTEGER NOT NULL,
+                    ar_ligado INTEGER NOT NULL,
+                    ventilador INTEGER NOT NULL,
+                    umidificador INTEGER NOT NULL,
+                    acoes TEXT NOT NULL
+                )
+            ''')
+            conn.execute('''
+                INSERT INTO acoes_agente
+                    (temperatura, umidade, dormir, janela_aberta, ar_ligado,
+                     ventilador, umidificador, acoes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                temperatura,
+                umidade,
+                estado['dormir'],
+                estado['janela_aberta'],
+                estado['ar_ligado'],
+                estado.get('ventilador', 0),
+                estado.get('umidificador', 0),
+                ','.join(acoes),
+            ))
+
+            conn.execute('''
+                DELETE FROM acoes_agente
+                WHERE horario < datetime('now', 'localtime', ?)
+            ''', (f'-{RETENCAO_LOG_AGENTE_DIAS} days',))
+            conn.execute('''
+                DELETE FROM acoes_agente
+                WHERE id NOT IN (
+                    SELECT id FROM acoes_agente ORDER BY id DESC LIMIT ?
+                )
+            ''', (LIMITE_LOG_AGENTE,))
+            conn.execute('PRAGMA incremental_vacuum(1)')
+    except sqlite.Error as erro:
+        # O log é observabilidade; uma falha nele não pode impedir uma ação física.
+        print(f"[LOG AGENTE] Não foi possível gravar o evento: {erro}")
+
+
+def listar_acoes_agente(limite=100):
+    """Retorna os eventos mais recentes para uma futura tela ou API de auditoria."""
+    limite = max(1, min(int(limite), LIMITE_LOG_AGENTE))
+    try:
+        with sqlite.connect(ARQUIVO_LOG_AGENTE) as conn:
+            return conn.execute('''
+                SELECT horario, temperatura, umidade, dormir, janela_aberta,
+                       ar_ligado, ventilador, umidificador, acoes
+                FROM acoes_agente
+                ORDER BY id DESC
+                LIMIT ?
+            ''', (limite,)).fetchall()
+    except sqlite.Error:
+        return []
+
 def cria_tabela():
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
