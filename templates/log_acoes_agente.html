@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="30">
+    <title>Log de ações do agente</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+        h1 { margin-bottom: .4rem; }
+        .descricao { color: #4b5563; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: white; }
+        th, td { padding: .75rem; border: 1px solid #d1d5db; text-align: left; vertical-align: top; }
+        th { background: #0f766e; color: white; }
+        tr:nth-child(even) { background: #f0fdfa; }
+        .acoes { margin: 0; padding-left: 1.1rem; }
+        .vazio { padding: 1rem; background: white; border: 1px solid #d1d5db; }
+        a { color: #0f766e; }
+        @media (max-width: 900px) { body { margin: 1rem; } table { font-size: .85rem; } th, td { padding: .45rem; } }
+    </style>
+</head>
+<body>
+    <h1>Log de ações do agente</h1>
+    <p class="descricao">Exibindo os últimos {{ limite }} registros. A página é atualizada a cada 30 segundos.</p>
+    <p><a href="/">Voltar ao painel</a> · <a href="{{ url_for('log.consultar_log_acoes_agente_api', limite=limite) }}">Ver como JSON</a></p>
+
+    {% if eventos %}
+    <table>
+        <thead>
+            <tr>
+                <th>Data e hora</th>
+                <th>Temperatura</th>
+                <th>Umidade</th>
+                <th>Modo dormir</th>
+                <th>Janela</th>
+                <th>Ar</th>
+                <th>Ventilador</th>
+                <th>Umidificador</th>
+                <th>Ações executadas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evento in eventos %}
+            <tr>
+                <td>{{ evento.horario }}</td>
+                <td>{{ '%.1f'|format(evento.temperatura) }} °C</td>
+                <td>{{ '%.1f'|format(evento.umidade) }} %</td>
+                <td>{{ 'Ativo' if evento.dormir else 'Inativo' }}</td>
+                <td>{{ 'Aberta' if evento.janela_aberta else 'Fechada' }}</td>
+                <td>{{ 'Ligado' if evento.ar_ligado else 'Desligado' }}</td>
+                <td>{{ evento.ventilador }}</td>
+                <td>{{ evento.umidificador }}</td>
+                <td>
+                    {% if evento.acoes %}
+                    <ul class="acoes">{% for acao in evento.acoes %}<li>{{ acao }}</li>{% endfor %}</ul>
+                    {% else %}
+                    Nenhuma ação
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="vazio">Ainda não há ações registradas pelo agente.</p>
+    {% endif %}
+</body>
+</html>

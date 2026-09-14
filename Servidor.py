@@ -4,12 +4,14 @@ import services
 from controllers.admin_bp import admin_bp
 from controllers.graficos_bp import graf_bp
 from controllers.interface_bp import inter_bp
+from controllers.log_bp import log_bp
 from config import placas_registradas, estado_quarto
 
 app = Flask(__name__)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(graf_bp, url_prefix='/graficos')
 app.register_blueprint(inter_bp, url_prefix='/interf')
+app.register_blueprint(log_bp, url_prefix='/log')
 
 ip_local = '0.0.0.0'
 porta_Local = 5050
