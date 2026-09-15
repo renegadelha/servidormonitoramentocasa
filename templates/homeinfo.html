@@ -89,6 +89,12 @@
                 <a href="/graficos/umidade" target="_blank" class="btn btn-nav">VER GRÁFICO DE UMIDADE</a>
             </div>
         </div>
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>Desligamento rápido</h2>
+            <div class="btn-group">
+                <button class="btn btn-off" onclick="desligarVentiladorEUmidificador()">DESLIGAR VENTILADOR E UMIDIFICADOR</button>
+            </div>
+        </div>
     </div>
     <script>
 
@@ -158,6 +164,18 @@
                     document.getElementById('toggle-dormir').checked = !document.getElementById('toggle-dormir').checked;
                     alert("Erro de comunicação!");
                 });
+        }
+
+        function desligarVentiladorEUmidificador() {
+            fetch('/interf/desligar_ventilador_umidificador', { method: 'POST' })
+                .then(response => response.json().then(data => ({ response, data })))
+                .then(({ response, data }) => {
+                    if (!response.ok) {
+                        throw new Error(data.erro || 'Não foi possível iniciar o desligamento.');
+                    }
+                    alert(data.mensagem);
+                })
+                .catch(error => alert(`Erro: ${error.message}`));
         }
 
 

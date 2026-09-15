@@ -1,6 +1,7 @@
 from flask import *
 import requests
 import services
+from threading import Thread
 from config import estado_quarto, placas_registradas
 
 inter_bp = Blueprint('interf', __name__)
@@ -260,6 +261,50 @@ def ligarumidificador():
 
     except requests.exceptions.RequestException as e:
         return jsonify({"erro": f"Falha de comunicação com a esp32c3vent: {str(e)}"}), 503
+
+
+def _iniciar_desligamento_ciclico(dispositivo):
+    """Desliga um dispositivo de quatro estados sem bloquear a resposta HTTP.
+
+    A ESP32-C3 usa o mesmo comando para avançar entre os estados 0, 1, 2 e 3.
+    ``executar_desligamento`` repete esse comando até o estado registrado voltar
+    para 0, que é a mesma regra usada pelos agendamentos.
+    """
+    Thread(
+        target=services.executar_desligamento,
+        args=(dispositivo,),
+        daemon=True,
+    ).start()
+
+
+@inter_bp.route('/desligarventilador', methods=['GET', 'POST'])
+def desligar_ventilador():
+    _iniciar_desligamento_ciclico('ventilador')
+    return jsonify({
+        'status': 'sucesso',
+        'mensagem': 'Desligamento cíclico do ventilador iniciado.',
+    }), 202
+
+
+@inter_bp.route('/desligarumidificador', methods=['GET', 'POST'])
+def desligar_umidificador():
+    _iniciar_desligamento_ciclico('umidificador')
+    return jsonify({
+        'status': 'sucesso',
+        'mensagem': 'Desligamento cíclico do umidificador iniciado.',
+    }), 202
+
+
+@inter_bp.route('/desligar_ventilador_umidificador', methods=['POST'])
+def desligar_ventilador_umidificador():
+    """Inicia os dois desligamentos sem bloquear a resposta da interface."""
+    _iniciar_desligamento_ciclico('ventilador')
+    _iniciar_desligamento_ciclico('umidificador')
+
+    return jsonify({
+        'status': 'sucesso',
+        'mensagem': 'Desligamento do ventilador e do umidificador iniciado.',
+    }), 202
 
 
 @inter_bp.route('/agendar', methods=['GET'])
