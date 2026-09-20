@@ -1,3 +1,5 @@
+from urllib import request
+
 from flask import *
 import daofile
 import services
@@ -85,6 +87,11 @@ def recebe_dados():
 
     return jsonify({'message': 'Dados salvos com sucesso'}), 200
 
+
+@app.route('/ipesp')
+def pegar_ipdaesp():
+    ip = request.args.get('ip')
+    print(ip)
 
 if __name__ == '__main__':
     app.run(host=ip_local, port=porta_Local, debug=True)

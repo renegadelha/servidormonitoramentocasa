@@ -114,7 +114,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
                 _registrar_acoes(temperatura, umidade, ["Janela Fechada (segurança)"])
 
             # --- SKILL MADRUGADA (Otimização Energética entre 03h e 05h) ---
-            if (2 <= hora_atual < 5) and estado_quarto['ar_ligado'] == 1 and temperatura <= 27:
+            if (0 <= hora_atual < 5) and estado_quarto['ar_ligado'] == 1 and temperatura <= 27:
                 try:
                     acoes_madrugada = []
                     _acionar(ip_ar, 'desligar', 'ar-condicionado')
