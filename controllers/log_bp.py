@@ -42,3 +42,9 @@ def consultar_log_acoes_agente_api():
     limite = obter_limite()
     eventos = [serializar_evento(evento) for evento in daofile.listar_acoes_agente(limite)]
     return jsonify({'limite': limite, 'eventos': eventos})
+
+
+@log_bp.route('/dados-sensor', methods=['GET'])
+def consultar_dados_sensor():
+    dados_sensor = daofile.listar_ultimos_dados_sensor(200)
+    return render_template('dados_sensor_recentes.html', dados_sensor=dados_sensor)

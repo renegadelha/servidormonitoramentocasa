@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="30">
+    <title>Últimos dados dos sensores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+        h1 { margin-bottom: .4rem; }
+        .descricao { color: #4b5563; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: white; }
+        th, td { padding: .75rem; border: 1px solid #d1d5db; text-align: left; }
+        th { background: #0f766e; color: white; }
+        tr:nth-child(even) { background: #f0fdfa; }
+        .vazio { padding: 1rem; background: white; border: 1px solid #d1d5db; }
+        a { color: #0f766e; }
+        @media (max-width: 700px) { body { margin: 1rem; } table { font-size: .85rem; } th, td { padding: .45rem; } }
+    </style>
+</head>
+<body>
+    <h1>Últimas 200 leituras dos sensores</h1>
+    <p class="descricao">Registros do mais recente para o mais antigo. A página é atualizada a cada 30 segundos.</p>
+    <p><a href="/">Voltar ao painel</a> · <a href="/log">Ver log de ações</a></p>
+
+    {% if dados_sensor %}
+    <table>
+        <thead>
+            <tr>
+                <th>Luminosidade</th>
+                <th>Umidade</th>
+                <th>Temperatura</th>
+                <th>Status da janela</th>
+                <th>Data e hora</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dado in dados_sensor %}
+            <tr>
+                <td>{{ dado[0] }}</td>
+                <td>{{ dado[1] }}</td>
+                <td>{{ dado[2] }}</td>
+                <td>{{ dado[3] }}</td>
+                <td>{{ dado[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="vazio">Ainda não há leituras registradas.</p>
+    {% endif %}
+</body>
+</html>

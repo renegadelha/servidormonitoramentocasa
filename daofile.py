@@ -125,6 +125,18 @@ def listar():
     conn.close()
     return objetos
 
+
+def listar_ultimos_dados_sensor(limite=200):
+    """Retorna a telemetria recente sem expor ID ou o dado de chuva."""
+    with sqlite.connect('db2.sqlite') as conn:
+        return conn.execute('''
+            SELECT luminosidade, umidade, temperatura, status, envio
+            FROM dados_sensor
+            ORDER BY id DESC
+            LIMIT ?
+        ''', (limite,)).fetchall()
+
+
 def get_sensor(nome_sensor):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
