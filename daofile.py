@@ -103,13 +103,13 @@ def inserir(lumin, umidade, temp, status, chuva):
     conn.commit()
     conn.close()
 
-def inserir_th(umidade, temp):
+def inserir_th(luminosidade, umidade, temp, janela):
     conn = sqlite.connect('db2.sqlite')
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO dados_sensor (luminosidade, umidade, temperatura, status, chuva, envio) 
         VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'))
-    ''', (0, umidade, temp, 0, 0))
+    ''', (luminosidade, umidade, temp, janela, 0))
     conn.commit()
     conn.close()
 

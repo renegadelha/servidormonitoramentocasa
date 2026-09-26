@@ -27,18 +27,19 @@ def _registrar_acoes(temperatura, umidade, acoes):
         daofile.registrar_acao_agente(temperatura, umidade, estado_quarto, acoes)
 
 
-def ajustar(temp_str, umid_str, dormir, aberta):
-    print(f"Recebido - Temp: {temp_str}, Umid: {umid_str}, Dormir: {dormir}, Aberta(ESP): {aberta}")
+def ajustar(temp_str, umid_str, dormir, aberta, luminosidade):
+    print(f"Recebido - Temp: {temp_str}, Umid: {umid_str}, Dormir: {dormir}, Aberta(ESP): {aberta}, Lumi(ESP): {luminosidade}")
 
-    if None in (temp_str, umid_str, dormir, aberta):
+    if None in (temp_str, umid_str, dormir, aberta, luminosidade):
         print("Erro: Requisição recebida sem os parâmetros corretos.")
-        return jsonify({"erro": "Faltam parâmetros de temperatura, umidade, dormir ou aberta"}), 400
+        return jsonify({"erro": "Faltam parâmetros de temperatura, umidade, dormir, aberta ou luminosidade"}), 400
 
     try:
         temperatura = float(temp_str)
         umidade = float(umid_str)
         modo_dormir = int(dormir)
         janela_aberta = int(aberta)
+        lumi = int(luminosidade)
         if modo_dormir not in (0, 1) or janela_aberta not in (0, 1):
             return jsonify({"erro": "Os estados dormir e aberta devem ser 0 ou 1"}), 400
         if not -20 <= temperatura <= 70:
@@ -49,7 +50,7 @@ def ajustar(temp_str, umid_str, dormir, aberta):
         estado_quarto['dormir'] = modo_dormir
         estado_quarto['janela_aberta'] = janela_aberta
 
-        daofile.inserir_th(umidade, temperatura)
+        daofile.inserir_th( lumi, umidade, temperatura, janela_aberta)
         estado_quarto['temperatura_atual'] = float(temperatura)
         estado_quarto['umidade_atual'] = float(umidade)
 

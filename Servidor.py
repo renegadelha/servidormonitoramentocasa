@@ -53,8 +53,9 @@ def receber_dados():
     umid_str = request.args.get('umidade')
     dormir = request.args.get('dormir')
     aberta = request.args.get('aberta')
+    luminosidade = request.args.get('luminosidade')
     
-    return services.ajustar(temp_str, umid_str, dormir, aberta)
+    return services.ajustar(temp_str, umid_str, dormir, aberta, luminosidade)
 
 
 @app.route('/listar')
